@@ -1,0 +1,5 @@
+option1 <- read.csv("master_peptidoform_errors.csv")
+head(option1)
+str(option1$calibrated_error)
+summary(option1)
+length(option1$peptidoform_id) == length(unique(option1$peptidoform_id))

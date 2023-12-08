@@ -1,0 +1,44 @@
+When Eric has run the processing, he runs a pipeline of tools – Comet search (or sometimes MS-Fragger), then PeptideProphet, iProphet and PTMProphet. Pp_prob comes from PeptideProphet, ip_prob comes from iProphet.
+
+ 
+
+PeptideProphet assigns a probability that the peptidoform has been correctly identified in a single scan, by modelling the distribution of scores from the search engine
+iProphet can model whether the peptidoform has been correctly identified based on multiple streams of evidence, including across different charge states and from multiple PSMs (peptide-spectrum matches)
+PTMProphet works again at a single scan level, to assign a probability that the modification has been correctly localised.
+ 
+
+I think we should rank and threshold  based on PeptideProphet (pp_prob) scores, since we have a lot of data, and there seems no advantage to including weak PSMs, simply because other PSMs have identified the same peptidoform strongly. PTMProphet is not useful to us for sulfo analysis, due to the complete neutral losses. For phospho localisation, the scores could also be misleading in the context of sulfo. Consider a true peptidoform:
+
+ 
+
+MRPsYRPSELER i.e. sulfo on Y at pos 4
+
+ 
+
+Given there is a full neutral loss, it would be plausible to see the unmodified b4, b5, b6 ions in the spectrum:
+
+ 
+
+MRPY
+
+MRPYR
+
+MRPYRP
+
+ 
+
+PTMProphet would use these as positive evidence that it is the serine that is phosphorylated and assign a strong score, even though there are no “positive” evidence for +79.97 on ions containing serine.
+
+ 
+
+When I have searched for sulfation locally, I don’t always run iProphet and PTMProphet for speed, so post-processing scripts that expect these columns to be there could crash.
+
+
+### to do now: 
+you can start writing some code that assembles all the PSMs for a given peptidoform (a peptidoform is an exact peptide sequence), with a certain set of modifications (a "strict" peptidoform enforces that the modifications are all in the same positions but for our purposes I wouldn't do that. i.e. PEPTIDSETYR + 2 Phosphos is one peptidoform. You can discard any peptides that do not have at least one phospho
+ 
+You can capture the distribution of calibrated mass shifts for every peptidoform across all data sets we have
+ 
+Then look for any that have multiple PSMs mass shifted towards a sulfo hypothesis
+
+ 

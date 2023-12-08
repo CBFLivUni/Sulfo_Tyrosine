@@ -1,0 +1,1 @@
+I think the problem is that I'm saving vectors in column 2 in the grouped part, better save it as a string separated by | rather than vector! 
