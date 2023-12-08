@@ -1,0 +1,6 @@
+module load aspera
+module load pgbtools
+
+cd PXD037549 
+FetchPride2  PXD012188 raw
+ls *.raw > samples.txt

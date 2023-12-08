@@ -1,1 +1,6 @@
 *.pep.xml
+*.tsv
+*.csv
+*.pdf
+*.jpg
+*.RData
