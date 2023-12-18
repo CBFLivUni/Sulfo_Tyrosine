@@ -14,7 +14,7 @@ calibrated_files <- list.files(wd, pattern = extension, full.names = FALSE, recu
 folders <- dirname(calibrated_files)
 # and the filenames for input in plot histograms f-n by Andy
 input_filenames <- basename(calibrated_files)
-
+write.csv(input_filenames, file = "../metadata/filenames.csv")
 ########## plot initial hostograms ############
 # for all files, ploit the histogram using andy's modified function 
 ## added a line or two of code in his f-n to deal with subdirectories
