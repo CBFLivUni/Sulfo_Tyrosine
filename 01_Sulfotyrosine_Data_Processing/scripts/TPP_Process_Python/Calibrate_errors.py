@@ -72,7 +72,11 @@ def calibrate_errors(results_file):
             #print("error=",cells[5])
             da_error = float(cells[5])
             calibrated_da_error = da_error - rawfile_to_median[rawfile]
-            f_out.write(line + "\t" + str(calibrated_da_error) + "\n")
+            # Apply additional filtering while writing
+            if abs(calibrated_da_error) < 0.2:
+                f_out.write(line + "\t" + str(calibrated_da_error) + "\n")
+            # put the below line in the above conditional to get rid of values that slipped through our deisotoping loop
+            # f_out.write(line + "\t" + str(calibrated_da_error) + "\n")
         else:
             f_out.write(line + "\t" + "calibrated_error" + "\n")
         counter += 1
