@@ -1,0 +1,1 @@
+PXD000451-Hs_platelets_Phospho_PLPC: Processed 56070 spectra in interact-ipro-ptm.pep.xml

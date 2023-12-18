@@ -1,0 +1,1 @@
+PXD000451-Hs_platelets_Phospho_Thrombin: Processed 50060 spectra in interact-ipro-ptm.pep.xml

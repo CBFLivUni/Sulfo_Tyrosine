@@ -132,7 +132,8 @@ def convert(input,file_prefix):
         log.write(f"{file_prefix}: Processed {Handler.spectrum_count} spectra in {filename}\n")
 
     print("Finished. Output written to", output_file)
-
+    # return True  # just in case we want to e.g. delete or archive completed files
+    return True
 
 def testing():
     # input_XML = "D:/temp/PXD028712/interact-ipro.pep.xml"

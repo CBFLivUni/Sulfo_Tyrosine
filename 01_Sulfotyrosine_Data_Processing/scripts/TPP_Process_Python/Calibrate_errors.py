@@ -3,37 +3,53 @@ import sys
 import statistics
 
 def calibrate_errors(results_file):
-    print("Calibrating",results_file)
-    f = open(results_file,"r")
+    print("Calibrating", results_file)
+    f = open(results_file, "r")
     rawfile_to_Da_shifts = {}
 
+
     counter =0
+    isotope_peak = 1.003355
     for line in f:
         line = line.rstrip("\n")
         if counter != 0:
             cells=line.split("\t")
             rawfile = cells[0].split(".")[0]
 
-            da_shifts = []
-            if rawfile in rawfile_to_Da_shifts:
-                da_shifts = rawfile_to_Da_shifts[rawfile]
+            # da_shifts = []
+            # if rawfile in rawfile_to_Da_shifts:
+            #     da_shifts = rawfile_to_Da_shifts[rawfile]
+            # da_shift = float(cells[5])
+            # replaced code above with slightly more concise version
+            da_shifts = rawfile_to_Da_shifts.get(rawfile, [])
             da_shift = float(cells[5])
 
-            isotope_peak = 1.003355
-            if int(round(da_shift,0))==1:
-                da_shift = da_shift - isotope_peak
-            if int(round(da_shift,0))==2:
-                da_shift = da_shift -  (2 * isotope_peak)
-            if int(round(da_shift,0))==3:
-                da_shift = da_shift -  (3 * isotope_peak)
+            # TODO - calibration is not quite right for isotopes
+            # if int(round(da_shift,0))==1:
+            #     da_shift = da_shift - isotope_peak
+            # if int(round(da_shift,0))==2:
+            #     da_shift = da_shift -  (2 * isotope_peak)
+            # if int(round(da_shift,0))==3:
+            #     da_shift = da_shift -  (3 * isotope_peak)
 
-            #TODO - calibration is not quite right
+            # if da_shift < 0.2:  #exclude those where isotope error has occured
+            #     da_shifts.append(da_shift)
+            # rawfile_to_Da_shifts[rawfile] = da_shifts
 
+            # new code attempting to resolve.
+            # Adjust for isotope peak errors
+            # here we have picked quite an arbitrary 0.2 Da instead of rounding
+            for i in range(1, 4):  # Adjust for 1, 2, and 3 Da shifts
+                if abs(da_shift - i * isotope_peak) < 0.2:
+                    da_shift -= i * isotope_peak
+                    break
 
-
-            if da_shift < 0.2:  #exclude those where isotope error has occured
+            # Filter out shifts greater than 0.2 (once again arbitrary)
+            if abs(da_shift) < 0.2:
                 da_shifts.append(da_shift)
+
             rawfile_to_Da_shifts[rawfile] = da_shifts
+
         counter += 1
 
     rawfile_to_median = {}
@@ -60,7 +76,9 @@ def calibrate_errors(results_file):
         else:
             f_out.write(line + "\t" + "calibrated_error" + "\n")
         counter += 1
-
+    # close the files, good practice
+    f.close()
+    f_out.close()
 
 
 

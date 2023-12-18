@@ -1,1 +1,1 @@
-PXD000222_U2OS_PLKinh-30m_TiO2-Diemthy: Processed 214643 spectra in interact-ipro.pep.xml
+PXD000222_U2OS_PLKinh-30m_TiO2-Diemthyl: Processed 214643 spectra in interact-ipro.pep.xml

@@ -1,0 +1,1 @@
+PXD000612-Hs_Hela_EGF: Processed 2109393 spectra in interact-ipro-ptm.pep.xml

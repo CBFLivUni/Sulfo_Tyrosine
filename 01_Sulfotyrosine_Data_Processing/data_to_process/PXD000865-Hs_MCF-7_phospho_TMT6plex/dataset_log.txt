@@ -1,0 +1,1 @@
+PXD000865-Hs_MCF-7_phospho_TMT6plex: Processed 715429 spectra in interact-ipro-ptm.pep.xml

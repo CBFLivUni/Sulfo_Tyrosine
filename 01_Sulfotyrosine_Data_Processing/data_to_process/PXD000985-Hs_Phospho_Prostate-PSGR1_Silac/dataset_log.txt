@@ -1,0 +1,1 @@
+PXD000985-Hs_Phospho_Prostate-PSGR1_Silac: Processed 254084 spectra in interact-ipro-ptm.pep.xml
