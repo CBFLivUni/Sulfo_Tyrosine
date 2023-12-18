@@ -8,13 +8,14 @@ source("PSM_assembly_fun.R") # function to assemble the summarised data across m
 ##### get datasets calibrated data to work with ##########
 # get all calibrated tsvs
 wd <- paste0(getwd(), "/")
-extension = ".pep_calibrated.tsv"
+extension = "thresholded_calibrated.tsv.tsv"
 calibrated_files <- list.files(wd, pattern = extension, full.names = FALSE, recursive = TRUE)
 # extract the folder paths for hist plot f-n
 folders <- dirname(calibrated_files)
 # and the filenames for input in plot histograms f-n by Andy
 input_filenames <- basename(calibrated_files)
-write.csv(input_filenames, file = "../metadata/filenames.csv")
+# write.csv(input_filenames, file = "../metadata/filenames.csv")
+
 ########## plot initial hostograms ############
 # for all files, ploit the histogram using andy's modified function 
 ## added a line or two of code in his f-n to deal with subdirectories
