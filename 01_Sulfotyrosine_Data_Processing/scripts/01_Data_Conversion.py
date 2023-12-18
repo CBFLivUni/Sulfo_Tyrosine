@@ -1,20 +1,36 @@
-import ListFilesFun as Lf
+import ListFilesFun as LF
 import os
-from TPP_Process_Python import Convert_pepXML_toCSV as Convert
+import zipfile
+from TPP_Process_Python import Convert_pepXML_toCSV as convert
 
-# Update the folder path to point to the 'data_to_process' subdirectory, relative to the 'scripts' directory
 folder_path = os.path.join(os.getcwd(), '../data_to_process')
 print(folder_path)
 
-extension_to_find = '.pep.xml'
-# Use the modified function to get a list of all pep.xml files that need to be converted
-pep_xmls, prefixes = Lf.getfiles(folder=folder_path, extension=extension_to_find, get_prefix=True)
+extension_to_find = '.zip'
+zip_files, prefixes = LF.getfiles(folder=folder_path, extension=extension_to_find, get_prefix=True)
 
-print(pep_xmls)
-print(prefixes)
+for zip_file, prefix in zip(zip_files, prefixes):
+    print(f"Processing {zip_file} with prefix {prefix}")
 
-for file, prefix in zip(pep_xmls, prefixes):
-    print(f"Converting {file} with prefix {prefix}")
-    # The file path needs to be combined with the folder_path to get the absolute path
-    absolute_file_path = os.path.join(folder_path, file)
-    Convert.convert(input=absolute_file_path, file_prefix=prefix)
+    # Create a unique output directory for each zip file
+    unique_output_path = os.path.join(folder_path, 'extracted_files', prefix)
+    if not os.path.exists(unique_output_path):
+        os.makedirs(unique_output_path)
+
+    # Unzip the contents into the unique output directory
+    with zipfile.ZipFile(os.path.join(folder_path, zip_file), 'r') as zip_ref:
+        # Extract each member to the correct location
+        for member in zip_ref.namelist():
+            # Construct the absolute path for each member
+            target_path = os.path.join(unique_output_path, os.path.basename(member))
+            # Extract the member only if it's a file (skip directories)
+            if not member.endswith('/'):
+                with zip_ref.open(member) as source, open(target_path, 'wb') as target:
+                    target.write(source.read())
+
+        # Process each .xml file in the unique output directory
+        for root, dirs, files in os.walk(unique_output_path):
+            for file in files:
+                if file.endswith('.pep.xml'):
+                    file_path = os.path.join(root, file)
+                    convert.convert(input=file_path, file_prefix=prefix)
