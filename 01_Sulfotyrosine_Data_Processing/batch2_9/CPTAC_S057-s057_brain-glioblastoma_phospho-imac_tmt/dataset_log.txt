@@ -1,0 +1,1 @@
+CPTAC_S057-s057_brain-glioblastoma_phospho-imac_tmt: Processed 1601736 spectra in interact-ipro-ptm.pep.xml

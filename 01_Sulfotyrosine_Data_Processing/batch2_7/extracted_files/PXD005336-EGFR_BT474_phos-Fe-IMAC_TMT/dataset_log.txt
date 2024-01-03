@@ -1,0 +1,1 @@
+PXD005336-EGFR_BT474_phos-Fe-IMAC_TMT: Processed 357529 spectra in interact-ipro-ptm.pep.xml

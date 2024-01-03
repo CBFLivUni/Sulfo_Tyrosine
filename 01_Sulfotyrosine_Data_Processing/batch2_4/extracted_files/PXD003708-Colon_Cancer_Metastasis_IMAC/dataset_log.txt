@@ -1,0 +1,1 @@
+PXD003708-Colon_Cancer_Metastasis_IMAC: Processed 352415 spectra in interact-ipro-ptm.pep.xml

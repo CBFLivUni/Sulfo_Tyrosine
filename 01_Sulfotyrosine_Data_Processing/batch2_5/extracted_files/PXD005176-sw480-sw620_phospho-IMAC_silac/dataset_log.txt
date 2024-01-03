@@ -1,0 +1,2 @@
+PXD005176-sw480-sw620_phospho-IMAC_silac: Processed 383351 spectra in interact-ipro-ptm.pep.xml
+extracted_files_PXD005176-sw480-sw620_phospho-IMAC_silac: Processed 383351 spectra in interact-ipro-ptm.pep.xml

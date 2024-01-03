@@ -1,0 +1,1 @@
+PXD003523-HeLa_EGFR-signaling_pTyr-Silac: Processed 3206 spectra in interact-ipro-ptm.pep.xml

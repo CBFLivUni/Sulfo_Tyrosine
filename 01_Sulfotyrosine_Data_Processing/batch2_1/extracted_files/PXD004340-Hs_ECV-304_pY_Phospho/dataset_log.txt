@@ -1,0 +1,1 @@
+PXD004340-Hs_ECV-304_pY_Phospho: Processed 73218 spectra in interact-ipro-ptm.pep.xml

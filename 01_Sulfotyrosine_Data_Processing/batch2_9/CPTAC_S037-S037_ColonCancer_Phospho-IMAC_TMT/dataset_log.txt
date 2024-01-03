@@ -1,0 +1,1 @@
+CPTAC_S037-S037_ColonCancer_Phospho-IMAC_TMT: Processed 1028639 spectra in interact-ipro-ptm.pep.xml

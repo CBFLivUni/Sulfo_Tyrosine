@@ -1,0 +1,1 @@
+PXD003492-DG75_CD79a-knockdown_pY-IP-Silac: Processed 84616 spectra in interact-ipro-ptm.pep.xml

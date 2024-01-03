@@ -1,0 +1,1 @@
+PXD003370-mcf10a_irradiation-treated_phospho-mAbs: Processed 76105 spectra in interact-ipro-ptm.pep.xml

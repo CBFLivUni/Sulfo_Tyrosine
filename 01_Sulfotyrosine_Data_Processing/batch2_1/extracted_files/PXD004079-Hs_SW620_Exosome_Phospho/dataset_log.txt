@@ -1,0 +1,1 @@
+PXD004079-Hs_SW620_Exosome_Phospho: Processed 5131 spectra in interact-ipro-ptm.pep.xml

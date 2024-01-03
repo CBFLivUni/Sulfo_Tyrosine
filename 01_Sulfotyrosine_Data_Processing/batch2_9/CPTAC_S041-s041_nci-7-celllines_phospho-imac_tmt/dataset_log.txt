@@ -1,0 +1,1 @@
+CPTAC_S041-s041_nci-7-celllines_phospho-imac_tmt: Processed 164335 spectra in interact-ipro-ptm.pep.xml

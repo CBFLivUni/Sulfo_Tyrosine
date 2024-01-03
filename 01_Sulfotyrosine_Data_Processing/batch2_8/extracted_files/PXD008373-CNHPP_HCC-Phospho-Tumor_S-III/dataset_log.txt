@@ -1,0 +1,1 @@
+PXD008373-CNHPP_HCC-Phospho-Tumor_S-III: Processed 2295162 spectra in interact-ipro-ptm.pep.xml

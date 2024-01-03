@@ -1,0 +1,1 @@
+PXD008068-a431_phospho-tio2_trypsin_itraq: Processed 13508 spectra in interact-ipro-ptm.pep.xml

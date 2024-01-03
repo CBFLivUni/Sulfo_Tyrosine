@@ -1,0 +1,1 @@
+CPTAC_S061-s061_pancrea-pdac_phospho-imac_tmt: Processed 2977415 spectra in interact-ipro-ptm.pep.xml

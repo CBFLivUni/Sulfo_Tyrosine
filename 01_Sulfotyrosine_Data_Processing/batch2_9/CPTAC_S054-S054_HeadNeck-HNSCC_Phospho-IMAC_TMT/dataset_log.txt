@@ -1,0 +1,1 @@
+CPTAC_S054-S054_HeadNeck-HNSCC_Phospho-IMAC_TMT: Processed 1805282 spectra in interact-ipro-ptm.pep.xml

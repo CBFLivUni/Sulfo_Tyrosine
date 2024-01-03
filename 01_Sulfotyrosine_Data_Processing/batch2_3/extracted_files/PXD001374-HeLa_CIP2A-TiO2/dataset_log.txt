@@ -1,0 +1,1 @@
+PXD001374-HeLa_CIP2A-TiO2: Processed 16598 spectra in interact-ipro-ptm.pep.xml

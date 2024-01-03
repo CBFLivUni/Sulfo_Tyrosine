@@ -1,0 +1,1 @@
+PXD002286-Hs_ProstateCancer_tissues_Phospho: Processed 1244272 spectra in interact-ipro-ptm.pep.xml

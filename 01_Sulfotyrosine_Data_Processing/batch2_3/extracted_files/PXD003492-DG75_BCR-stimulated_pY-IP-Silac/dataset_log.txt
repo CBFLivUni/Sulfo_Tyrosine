@@ -1,0 +1,1 @@
+PXD003492-DG75_BCR-stimulated_pY-IP-Silac: Processed 38001 spectra in interact-ipro-ptm.pep.xml

@@ -1,0 +1,1 @@
+PXD010611-cancer-associated_fibroblasts_phos-tio2: Processed 54253 spectra in interact-ipro-ptm.pep.xml

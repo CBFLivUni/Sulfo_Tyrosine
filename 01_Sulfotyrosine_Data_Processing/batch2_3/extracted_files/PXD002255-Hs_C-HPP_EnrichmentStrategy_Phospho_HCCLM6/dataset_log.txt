@@ -1,0 +1,1 @@
+PXD002255-Hs_C-HPP_EnrichmentStrategy_Phospho_HCCLM6: Processed 303041 spectra in interact-ipro-ptm.pep.xml

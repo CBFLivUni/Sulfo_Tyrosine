@@ -1,0 +1,1 @@
+CPTAC_S044-s044_kidney-ccrcc_phospho-imac_tmt: Processed 5819305 spectra in interact-ipro-ptm.pep.xml

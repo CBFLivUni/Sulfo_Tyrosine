@@ -1,0 +1,1 @@
+PXD001565-U87_wt_P-Tyr-1000: Processed 34064 spectra in interact-ipro-ptm.pep.xml

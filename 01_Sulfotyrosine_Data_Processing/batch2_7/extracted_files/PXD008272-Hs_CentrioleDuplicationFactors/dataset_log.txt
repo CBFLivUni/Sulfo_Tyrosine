@@ -1,0 +1,1 @@
+PXD008272-Hs_CentrioleDuplicationFactors: Processed 403040 spectra in interact-ipro-ptm.pep.xml

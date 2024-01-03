@@ -1,0 +1,1 @@
+PXD003492-DG75_Syk-inhibition_TiO2-Silac: Processed 853260 spectra in interact-ipro-ptm.pep.xml

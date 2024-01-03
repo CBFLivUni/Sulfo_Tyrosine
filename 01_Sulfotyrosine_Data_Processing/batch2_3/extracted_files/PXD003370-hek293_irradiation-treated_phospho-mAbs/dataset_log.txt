@@ -1,0 +1,1 @@
+PXD003370-hek293_irradiation-treated_phospho-mAbs: Processed 9000 spectra in interact-ipro-ptm.pep.xml

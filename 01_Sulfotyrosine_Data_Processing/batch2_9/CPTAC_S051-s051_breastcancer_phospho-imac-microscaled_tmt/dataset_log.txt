@@ -1,0 +1,1 @@
+CPTAC_S051-s051_breastcancer_phospho-imac-microscaled_tmt: Processed 529252 spectra in interact-ipro-ptm.pep.xml

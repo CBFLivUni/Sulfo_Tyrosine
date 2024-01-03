@@ -1,0 +1,1 @@
+PXD001115-SH-SY5Y_NGF-TrkA_PhosphoProteome: Processed 385547 spectra in interact-ipro-ptm.pep.xml

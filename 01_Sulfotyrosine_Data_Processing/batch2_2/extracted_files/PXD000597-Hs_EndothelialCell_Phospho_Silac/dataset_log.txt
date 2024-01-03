@@ -1,0 +1,1 @@
+PXD000597-Hs_EndothelialCell_Phospho_Silac: Processed 1416335 spectra in interact-ipro-ptm.pep.xml

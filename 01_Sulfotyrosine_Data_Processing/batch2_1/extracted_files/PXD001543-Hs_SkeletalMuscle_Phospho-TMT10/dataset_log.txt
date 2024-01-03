@@ -1,0 +1,1 @@
+PXD001543-Hs_SkeletalMuscle_Phospho-TMT10: Processed 198054 spectra in interact-ipro-ptm.pep.xml

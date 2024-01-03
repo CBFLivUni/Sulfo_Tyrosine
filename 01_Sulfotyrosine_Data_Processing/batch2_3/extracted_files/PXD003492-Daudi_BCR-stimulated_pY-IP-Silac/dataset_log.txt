@@ -1,0 +1,1 @@
+PXD003492-Daudi_BCR-stimulated_pY-IP-Silac: Processed 88611 spectra in interact-ipro-ptm.pep.xml

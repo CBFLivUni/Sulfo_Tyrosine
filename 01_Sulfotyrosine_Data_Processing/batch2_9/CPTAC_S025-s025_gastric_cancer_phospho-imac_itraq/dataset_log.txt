@@ -1,0 +1,1 @@
+CPTAC_S025-s025_gastric_cancer_phospho-imac_itraq: Processed 11661243 spectra in interact-ipro-ptm.pep.xml

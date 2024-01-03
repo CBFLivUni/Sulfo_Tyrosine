@@ -1,0 +1,1 @@
+CPTAC_S038-s038_ovariancancer_phospho_imac_tmt: Processed 1209451 spectra in interact-ipro-ptm.pep.xml

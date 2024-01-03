@@ -1,0 +1,1 @@
+PXD000496-HaCaT_TGFbeta-Signaling_Phospho: Processed 125227 spectra in interact-ipro-ptm.pep.xml

@@ -1,0 +1,1 @@
+CPTAC_S058-s058_lung-lscc_phospho-imac_tmt: Processed 2471391 spectra in interact-ipro-ptm.pep.xml

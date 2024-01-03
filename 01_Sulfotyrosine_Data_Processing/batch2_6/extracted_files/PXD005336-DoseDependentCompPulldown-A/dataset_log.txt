@@ -1,0 +1,1 @@
+PXD005336-DoseDependentCompPulldown-A: Processed 6457175 spectra in interact-ipro-ptm.pep.xml

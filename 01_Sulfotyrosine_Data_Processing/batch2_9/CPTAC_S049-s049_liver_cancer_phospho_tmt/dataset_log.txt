@@ -1,0 +1,1 @@
+CPTAC_S049-s049_liver_cancer_phospho_tmt: Processed 6780033 spectra in interact-ipro-ptm.pep.xml

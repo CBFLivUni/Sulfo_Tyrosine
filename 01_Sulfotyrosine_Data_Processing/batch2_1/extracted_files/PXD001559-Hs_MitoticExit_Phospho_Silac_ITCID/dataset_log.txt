@@ -1,0 +1,1 @@
+PXD001559-Hs_MitoticExit_Phospho_Silac_ITCID: Processed 79752 spectra in interact-ipro-ptm.pep.xml

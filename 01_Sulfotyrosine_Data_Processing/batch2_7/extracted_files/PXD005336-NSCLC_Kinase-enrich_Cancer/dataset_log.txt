@@ -1,0 +1,1 @@
+PXD005336-NSCLC_Kinase-enrich_Cancer: Processed 19144 spectra in interact-ipro-ptm.pep.xml

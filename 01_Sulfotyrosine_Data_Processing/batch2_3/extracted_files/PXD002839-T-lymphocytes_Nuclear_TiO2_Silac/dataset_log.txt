@@ -1,0 +1,1 @@
+PXD002839-T-lymphocytes_Nuclear_TiO2_Silac: Processed 290589 spectra in interact-ipro-ptm.pep.xml

@@ -15,8 +15,9 @@ knitr::opts_knit$set(root.dir = wd)
 ```{r calibrated_data_readin}
 # specify the extension unique to your calibrated files
 extension = "thresholded_calibrated.tsv"
+batch = "batch2_9"
 # get all calibrated files
-calibrated_files <- list.files(wd, pattern = extension, full.names = FALSE, recursive = TRUE)
+calibrated_files <- list.files(paste0(wd, batch), pattern = extension, full.names = TRUE, recursive = TRUE)
 # extract the folder paths for hist plot f-n
 folders <- dirname(calibrated_files)
 # and the filenames for input in plot histograms f-n by Andy
@@ -67,17 +68,21 @@ pepcols <-  c("peptide", "mod_peptide") # cols with peptide and PTM data
 # these are defaults, here just for ease
 peptidoform_id_summaries <- list()
 
-
+i = 19
 for (i in 1:length(filtered_data)) {
-  dataset_ID <- names(filtered_data[34]) 
+  dataset_ID <- names(filtered_data[i]) 
   print(dataset_ID)
+  print(i/length(filtered_data)*100)
   filtered_data[[i]]$dataset_ID <- dataset_ID  # set the dataset ID to its unique folder name
-  peptidoform_id_summaries[[i]] <- Summarise_By_Peptidoform(df = filtered_data[[i]],
+  peptidoform_id_summaries[[i]] <- Generate_Peptidoform_ID(df = filtered_data[[i]],
                                    outname = dataset_ID) # set name for saving .csv files
 }
 
-# the data has been written... did not return df for some reason, maybe I didn't source the function after changing? anyway...
+head(filtered_data[[i]])
 
+# the data has been written... did not return df for some reason, maybe I didn't source the function after changing? anyway...
+rm(peptidoform_id_summaries)
+gc()
 ```
 
 

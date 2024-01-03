@@ -1,0 +1,1 @@
+PXD000901-Hs_OvarianCancerCell-KOC-7C: Processed 1645935 spectra in interact-ipro-ptm.pep.xml

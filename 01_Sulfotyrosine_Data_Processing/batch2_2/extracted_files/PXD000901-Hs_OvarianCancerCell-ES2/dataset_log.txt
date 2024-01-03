@@ -1,0 +1,1 @@
+PXD000901-Hs_OvarianCancerCell-ES2: Processed 1629748 spectra in interact-ipro-ptm.pep.xml

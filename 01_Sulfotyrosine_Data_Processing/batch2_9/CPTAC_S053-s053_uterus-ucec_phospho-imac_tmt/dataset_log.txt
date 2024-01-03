@@ -1,0 +1,1 @@
+CPTAC_S053-s053_uterus-ucec_phospho-imac_tmt: Processed 2600903 spectra in interact-ipro-ptm.pep.xml

@@ -1,0 +1,1 @@
+CPTAC_S062-s062_aml_quizartinib_resistance_phospho-imac_tmt: Processed 93661 spectra in interact-ipro-ptm.pep.xml

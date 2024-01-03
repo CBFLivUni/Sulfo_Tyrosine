@@ -1,0 +1,1 @@
+PXD005171-colorectal_cancer_phospho-Fe-IMAC_itraq: Processed 79691 spectra in interact-ipro-ptm.pep.xml

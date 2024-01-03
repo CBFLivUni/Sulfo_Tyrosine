@@ -1,0 +1,1 @@
+PXD005922-Hs_Hela_Phospho-Silac: Processed 158735 spectra in interact-ipro-ptm.pep.xml

@@ -1,0 +1,1 @@
+PXD000341-Jurkat_TCR-induced-phospho_TiO2-SILAC_TS1: Processed 174651 spectra in interact-ipro-ptm.pep.xml

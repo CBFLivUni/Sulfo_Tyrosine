@@ -1,0 +1,1 @@
+CPTAC_S062-s062_aml_gilteritinib_resistance_phospho-imac_tmt: Processed 342020 spectra in interact-ipro-ptm.pep.xml

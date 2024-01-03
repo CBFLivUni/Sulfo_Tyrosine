@@ -1,0 +1,1 @@
+PXD004252-Hs_HepG2_Phospho: Processed 140697 spectra in interact-ipro-ptm.pep.xml

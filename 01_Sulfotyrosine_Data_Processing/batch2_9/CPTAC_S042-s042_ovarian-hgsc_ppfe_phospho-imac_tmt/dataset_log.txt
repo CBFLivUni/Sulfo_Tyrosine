@@ -1,0 +1,1 @@
+CPTAC_S042-s042_ovarian-hgsc_ppfe_phospho-imac_tmt: Processed 190943 spectra in interact-ipro-ptm.pep.xml

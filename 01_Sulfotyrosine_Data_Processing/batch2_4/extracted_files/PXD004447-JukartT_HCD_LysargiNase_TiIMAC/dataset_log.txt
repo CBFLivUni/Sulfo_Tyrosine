@@ -1,0 +1,1 @@
+PXD004447-JukartT_HCD_LysargiNase_TiIMAC: Processed 198776 spectra in interact-ipro-ptm.pep.xml

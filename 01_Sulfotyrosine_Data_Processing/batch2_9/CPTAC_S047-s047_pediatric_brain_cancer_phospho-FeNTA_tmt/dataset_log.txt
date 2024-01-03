@@ -1,0 +1,1 @@
+CPTAC_S047-s047_pediatric_brain_cancer_phospho-FeNTA_tmt: Processed 218440 spectra in interact-ipro-ptm.pep.xml

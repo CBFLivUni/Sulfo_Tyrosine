@@ -1,0 +1,2 @@
+PXD005175-colorectal_cancer_phospho_itraq: Processed 416077 spectra in interact-ipro-ptm.pep.xml
+extracted_files_PXD005175-colorectal_cancer_phospho_itraq: Processed 416077 spectra in interact-ipro-ptm.pep.xml

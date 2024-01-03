@@ -1,0 +1,2 @@
+PXD004981-BT-474_Lapatinib-Resistance_Fe-IMAC-Dimethyl: Processed 216575 spectra in interact-ipro-ptm.pep.xml
+extracted_files_PXD004981-BT-474_Lapatinib-Resistance_Fe-IMAC-Dimethyl: Processed 216575 spectra in interact-ipro-ptm.pep.xml

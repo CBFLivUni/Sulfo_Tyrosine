@@ -1,0 +1,1 @@
+PXD001620-Hs_Macrophage_Phospho: Processed 104258 spectra in interact-ipro-ptm.pep.xml

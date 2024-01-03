@@ -1,0 +1,1 @@
+PXD005336-NSCLC_Kinase-enrich_Control: Processed 17057 spectra in interact-ipro-ptm.pep.xml

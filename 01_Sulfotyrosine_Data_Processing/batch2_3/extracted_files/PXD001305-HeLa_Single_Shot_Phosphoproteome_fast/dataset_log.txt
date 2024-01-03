@@ -1,0 +1,1 @@
+PXD001305-HeLa_Single_Shot_Phosphoproteome_fast: Processed 57262 spectra in interact-ipro-ptm.pep.xml

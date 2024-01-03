@@ -1,0 +1,1 @@
+PXD003492-Daudi_Syk-inhibition_pY-IP-Silac: Processed 63779 spectra in interact-ipro-ptm.pep.xml

@@ -1,0 +1,1 @@
+PXD003904-Hs_UVPD_Phospho-HCC70_HCD: Processed 192316 spectra in interact-ipro-ptm.pep.xml
