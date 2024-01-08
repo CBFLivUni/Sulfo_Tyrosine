@@ -4,9 +4,21 @@ wd <- "C:/Users/jtzve/Desktop/Sufo_Tyrosine/01_Sulfotyrosine_Data_Processing/scr
 setwd(wd)
 
 # read in the aggregated data
-test <- read.csv("../out/_agg")
+test <- read.csv("../out/new_peptidoform_IDs_aggregated_by_peptidoform_ID.csv")
+
+test2 <- read.csv("../out/clean_new_peptidoform_IDs_aggregated_by_peptidoform_ID.csv")
+
+cleaned_IDs <- gsub("\\[|\\]|'", "", test[,1])
+
+test[,1] <- cleaned_IDs
+
+write.csv(test, "../out/clean_new_peptidoform_IDs_aggregated_by_peptidoform_ID.csv", row.names = FALSE)
+
+test == test2
+
 names(test)
-test1<-test
+test1<-test[1:50,]
+
 # Convert the string representations of lists to actual lists and then apply 
 # unique to see where we're actually going wrong - are we recording all information in the
 # aggregated_by_peptidoform_ID.csv files? 
@@ -21,9 +33,9 @@ test1<-test
 
 
 # for columns that are not the peptidoform ID one
-for (i in 2:ncol(test)){
+for (i in 1:ncol(test1)){
   # Apply a cleaning function to:
-  cleaned_col <- lapply(test[,i], function(x) {
+  cleaned_col <- lapply(test1[,i], function(x) {
     
     # 1) # Remove brackets and single quotes from the string
     clean_string <- gsub("\\[|\\]|'", "", x)  
@@ -45,11 +57,11 @@ for (i in 2:ncol(test)){
   # for the calibrated mass errors column (number 2), retain all elements.
   if (i==2){
     
-    test[,i] <- sapply(cleaned_col, function(x) paste(x, collapse = ", "))
+    test1[,i] <- sapply(cleaned_col, function(x) paste(x, collapse = ", "))
     
   } else {
   # for all other columnsm reatin only the unique values
-  test[,i] <- sapply(cleaned_col, function(x) paste(unique(x), collapse = ", "))
+  test1[,i] <- sapply(cleaned_col, function(x) paste(unique(x), collapse = ", "))
     
   }
   
@@ -58,8 +70,8 @@ for (i in 2:ncol(test)){
 
 # sanity check: how many peptidoforms were found in more than one dataset? 
 # easist way is to count how many rows contain a ',' in their 3rd column
-has_comma <- grepl(",", test$dataset_ID)
-sum(has_comma)
+has_comma <- grepl(",", test1$dataset_ID)
+multiple_datasets <- test1[has_comma,]
 
 ## conclusion - b the looks of it our code that outputs all aggregated_by_peptidoform_ID.csv
 # funcitons as intended. The trouble we run into must be an artefact of subsequent
