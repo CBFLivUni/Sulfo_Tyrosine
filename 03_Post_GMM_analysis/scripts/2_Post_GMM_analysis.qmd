@@ -1,0 +1,216 @@
+---
+title: "Post_GMM_Analysis"
+format: pdf
+editor: visual
+---
+
+```{r libraries}
+library(tidyverse)
+library(stringr) 
+```
+
+```{r functions}
+###### Function to get clean filenames, and round and extract bin boundaries ######
+clean_round_extract <- function(name, index) {
+  
+  #separate the name into pars splitting at _
+  parts <- unlist(strsplit(name, "_"))
+ 
+  # Rounding the numbers to the fourth decimal place; lower bin boundary is the 2nd part, upper is the 3rd part
+  lower <- round(as.numeric(parts[2]), 4)
+  upper <- round(as.numeric(parts[3]), 4)
+
+  # Storing the boundaries
+  # index = 1
+  lower_boundaries[length(lower_boundaries) + 1] <<- lower
+  upper_boundaries[length(upper_boundaries) + 1] <<- upper
+
+  # Reconstructing the cleaned name (and returning it)
+  return(paste0("mz_", lower, "_", upper))
+}
+
+# TODO: turn beow into a function to keep my environment tidy?
+# # List of all objects in the environment
+# all_objects <- ls()
+# 
+# # List of objects to keep (replace these with your actual data object names)
+# data_objects <- c("postGMM_data")
+# 
+# # Objects to remove
+# objects_to_remove <- setdiff(all_objects, data_objects)
+# 
+# # Remove the objects
+# rm(list = objects_to_remove)
+# 
+# # Clear objects_to_remove to clean up
+# rm(objects_to_remove)
+# 
+# rm("all_objects", "data_objects")
+
+
+```
+
+## Get proportion of tyrosine-containing peptides
+
+For each m/z bin that we have collected data from, we want to see what proportion of the peptides selected via our filtering contain a phospho-tyrosine (which could potentially be a sulfo-tyorsine)
+
+```{r read_data, echo=FALSE}
+# specify the extension unique to your calibrated files
+extension = "postGMM"
+wd <- "C:/Users/jtzve/Desktop/Sufo_Tyrosine/03_Post_GMM_analysis/data/"
+# get all files of interest
+bin_data_files <- list.files(wd, pattern = extension, full.names = TRUE, recursive = TRUE)
+
+# and get file path (not reltive!)
+input_filenames <- basename(bin_data_files)
+
+# read in all data one by one into an empty list, setting each data frame as a
+# new elemnt of the list. 
+postGMM_data <- list()
+print("reading in data")
+for (i in 1:length(bin_data_files)) {
+  print(bin_data_files[[i]])
+  postGMM_data[[i]] <- read.csv(bin_data_files[[i]])
+  print(i/length(input_filenames)*100)
+}
+```
+
+```{r clean_names}
+# clean the names - remove .csv, round the ranges, leave just the range and put mz before it
+# reatin information about bin ID == clean names, lower boundary, upper boundary to then put in a dataframe
+
+# Cleaning the names
+cleaned_names <- gsub("postGMM_fitting_binrange", "mz", input_filenames)
+cleaned_names <- gsub(".csv", "", cleaned_names, fixed = TRUE)
+
+# Now, cleaned_names should have the format like 'mz_0.300-0.400' 
+
+# Initialize empty vectors to store upper and lower boundaries
+lower_boundaries <- numeric()
+upper_boundaries <- numeric()
+
+
+# Applying the function to each name and storing the results
+cleaned_names <- sapply(cleaned_names, clean_round_extract, seq_along(cleaned_names))
+
+names(postGMM_data) <- cleaned_names
+
+```
+
+```{r get_bin_results}
+# create a data frame with one row for each bin 
+rm(bin_proportions_df)
+bin_proportions_df <- as.data.frame(matrix(nrow = length(postGMM_data), ncol = 0))
+bin_proportions_df$bin_ID <- cleaned_names
+
+# extract bin limits from the bin ID. round the values because they are a bit weird
+bin_proportions_df$lower_boundary <- lower_boundaries
+bin_proportions_df$upper_boundary <- upper_boundaries
+
+# for each bin, look at the corresponding data in post_GMM_data, and count:
+# 1) the overall number of Tyrosine-containing peptides (one or more Y present in peptidoform ID coplumn)
+
+# 2) the number of phosphotyrosine-containing peptides (Y243 present)
+
+# 3) the total number of peptidoforms
+
+# 4) calculate the proportion of tyrosine containing and proportion of phophotyrosine containing peptides in each bin
+
+## NB: also do the same for Serine and Threonine to compare 
+
+# Initialise a data frame to store the results
+results <- data.frame(bin_proportions_df, 
+                      ########## TYROSINE 
+                      tyrosine_containing_peptides_count = integer(length(postGMM_data)), 
+                      phosphotyrosine_containing_peptides_count = integer(length(postGMM_data)), 
+                      total_peptidoforms = integer(length(postGMM_data)), 
+                      tyrosine_containing_proportion = numeric(length(postGMM_data)), 
+                      phosphotyrosine_containing_proportion = numeric(length(postGMM_data)),
+                      ######### THREONINE
+                      threonine_containing_peptides_count = integer(length(postGMM_data)), 
+                      phosphothreonine_containing_peptides_count = integer(length(postGMM_data)), 
+                      total_peptidoforms = integer(length(postGMM_data)), 
+                      threonine_containing_proportion = numeric(length(postGMM_data)), 
+                      phosphothreonine_containing_proportion = numeric(length(postGMM_data)),
+                      ######## SERINE
+                      serine_containing_peptides_count = integer(length(postGMM_data)), 
+                      phosphoserine_containing_peptides_count = integer(length(postGMM_data)), 
+                      total_peptidoforms = integer(length(postGMM_data)), 
+                      serine_containing_proportion = numeric(length(postGMM_data)), 
+                      phosphoserine_containing_proportion = numeric(length(postGMM_data)))
+
+# test_df <- data.frame(peptidoform_id = c("TTT", "Y", "TYTY", "TY_Y243"))
+# data <- test_df
+
+# Iterate through each bin
+for (i in seq_along(postGMM_data)) {
+  data <- postGMM_data[[i]]
+
+  results$tyrosine_containing_peptides_count[i] <- sum(grepl("Y", data$peptidoform_id))
+  results$phosphotyrosine_containing_peptides_count[i] <- sum(grepl("Y243", data$peptidoform_id))
+  results$total_peptidoforms[i] <- nrow(data)
+
+  # Calculating proportions
+  results$tyrosine_containing_proportion[i] <- results$tyrosine_containing_peptides_count[i] / results$total_peptidoforms[i]
+  results$phosphotyrosine_containing_proportion[i] <- results$phosphotyrosine_containing_peptides_count[i] / results$total_peptidoforms[i]
+  
+  # Now for threonine
+  
+  results$threonine_containing_peptides_count[i] <- sum(grepl("T", data$peptidoform_id))
+  results$phosphothreonine_containing_peptides_count[i] <- sum(grepl("T181", data$peptidoform_id)) 
+  
+
+  # Calculating proportions
+  results$threonine_containing_proportion[i] <- results$threonine_containing_peptides_count[i] / results$total_peptidoforms[i]
+  results$phosphothreonine_containing_proportion[i] <- results$phosphothreonine_containing_peptides_count[i] / results$total_peptidoforms[i]
+  
+  
+  ## and for serine
+  
+  results$serine_containing_peptides_count[i] <- sum(grepl("S", data$peptidoform_id))
+  results$phosphoserine_containing_peptides_count[i] <- sum(grepl("S167", data$peptidoform_id)) 
+  
+
+  # Calculating proportions
+  results$serine_containing_proportion[i] <- results$serine_containing_peptides_count[i] / results$total_peptidoforms[i]
+  results$phosphoserine_containing_proportion[i] <- results$phosphoserine_containing_peptides_count[i] / results$total_peptidoforms[i]
+  
+}
+
+# might be interesting to look at what fraction of tyrosine-containing are 'phosphorylated'
+results$phospho_to_total_tyrosine_ratio <- results$phosphotyrosine_containing_peptides_count / 
+  results$tyrosine_containing_peptides_count
+
+# Ratio of phospho-Threonine to total Threonine-containing peptides
+results$phospho_to_total_threonine_ratio <- results$phosphothreonine_containing_peptides_count / results$threonine_containing_peptides_count
+
+# Ratio of phospho-serine to total serine-containing peptides
+results$phospho_to_total_serine_ratio <- results$phosphoserine_containing_peptides_count / results$serine_containing_peptides_count
+
+
+
+write.csv(results, file = "../out/PTM_proportions_results_by_bin.csv", row.names = FALSE)
+
+```
+
+
+```{r protein_ID_enrichment_results}
+
+
+# 5) bin matches to libraries of transmembrane and secreted proteins: 
+
+# 5_1) how many of all peptides have IDs in any of these categories for all bins? 
+# THIS is probably not very usefun info actually...
+
+# 5_2) how many Tyrosine-containng are trans-memeb and how many are secreted (as proportion?) 
+
+# 5_3) how many phospho-tryosine containing ones are secreted/transmemb? 
+
+#### could our data suggest sulfation of other amino acids at all? 
+
+
+
+
+```
+
+
