@@ -57,7 +57,7 @@ For each m/z bin that we have collected data from, we want to see what proportio
 ```{r read_data, echo=FALSE}
 # specify the extension unique to your calibrated files
 extension = "postGMM"
-wd <- "C:/Users/jtzve/Desktop/Sufo_Tyrosine/03_Post_GMM_analysis/data/"
+wd <- "C:/Users/jtzve/Genomics Dropbox/Jordan Tzvetkov/0_Projects/Sulfotyrosine Project/out/up_to_date_by_2024_09_01/data_by_GMM_bin/"
 # get all files of interest
 bin_data_files <- list.files(wd, pattern = extension, full.names = TRUE, recursive = TRUE)
 
@@ -99,7 +99,7 @@ names(postGMM_data) <- cleaned_names
 
 ```{r get_bin_results}
 # create a data frame with one row for each bin 
-rm(bin_proportions_df)
+# rm(bin_proportions_df)
 bin_proportions_df <- as.data.frame(matrix(nrow = length(postGMM_data), ncol = 0))
 bin_proportions_df$bin_ID <- cleaned_names
 
@@ -191,10 +191,39 @@ results$phospho_to_total_serine_ratio <- results$phosphoserine_containing_peptid
 
 write.csv(results, file = "../out/PTM_proportions_results_by_bin.csv", row.names = FALSE)
 
+
+
+```
+
+```{r plots}
+
+### need some plots to visualise the erichment - barplots? histogram of bins?
+
+### need some statistical test to see if actually significantly more?
 ```
 
 
 ```{r protein_ID_enrichment_results}
+### run enrichment analysis using cluster profiler
+# read in all human proteins for data filtering
+Swiss_Prot_Human <- read.csv(file = "C:/Users/jtzve/Genomics Dropbox/Jordan Tzvetkov/0_Projects/Sulfotyrosine Project/data/SwissProt_Human_proteins.tsv"
+, sep = "\t")
+
+head(Swiss_Prot_Human)
+Swiss_Prot_Human[1,1]
+# make sure no bias in inclusion criteria
+# phosphotyrosine-containing peptidoforms - grab all associated protein IDs across all bins as a background? 
+# vs foreground just the ones in the correct bin
+# if indeed sulfo, we would get an enrichment in cytokines, secreted proteins, membrane proteins, or similar
+
+# if random there should be no significant hits
+
+# try also running for a different bin with a similar number of hits as the expected sulfo bin. 
+class(Swiss_Prot_Human)
+
+
+
+
 
 
 # 5) bin matches to libraries of transmembrane and secreted proteins: 
