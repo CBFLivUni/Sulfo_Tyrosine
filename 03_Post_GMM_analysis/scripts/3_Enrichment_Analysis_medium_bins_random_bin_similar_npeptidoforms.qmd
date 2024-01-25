@@ -9,6 +9,7 @@ library(tidyverse)
 library(stringr) 
 
 ```
+
 ```{r directories}
 project_dir = "C:/Users/jtzve/Desktop/Sufo_Tyrosine/03_Post_GMM_analysis/"
 data_dir <- "C:/Users/jtzve/Desktop/Sufo_Tyrosine/03_Post_GMM_analysis/data/02_medium bins/"
@@ -563,7 +564,6 @@ write.table(tyrosines_containing_foreground_UNMATCHED, file = "../out/medium_bin
 
 ```
 
-
 ```{r proteinID_background}
 
 # first generate a list of lists with the background IDs
@@ -612,7 +612,7 @@ library(devtools)
 ensembl <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
 
 
-# Get the corresponding Entrez IDs for all UniProt IDs that we can
+# Get the corresponding ENSEMBL IDs for all UniProt IDs that we can
 Uniprot = getBM(
   attributes=c('ensembl_gene_id','uniprotswissprot'), 
   mart = ensembl)
@@ -825,7 +825,6 @@ ggsave("../out/medium_bins/KEGG_dotplot_bw_DECOY.png", plot = last_plot(), width
 
 ```
 
-
 ```{r Reactome_ORA}
 library(ReactomePA)
 
@@ -846,9 +845,6 @@ write.table(foreground_entrez_ids, file = "../out/medium_bins/foreground_entrez_
 write.table(background_entrez_ids, file = "../out/medium_bins/background_entrez_ids.tsv", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 ```
-
-
-
 
 ```{r PHOSPHOTYROSINE_ONLY}
 # what if we tried phosphotyrosines only for foreground and background:
@@ -884,4 +880,3 @@ phosphotyrosine_backg <- background[grepl("Y2", background$peptidoform_id), ]
 #### could our data suggest sulfation of other amino acids at all? 
 
 ```
-
