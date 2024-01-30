@@ -9,6 +9,7 @@ library(tidyverse)
 library(stringr) 
 
 ```
+
 ```{r directories}
 project_dir = "C:/Users/jtzve/Desktop/Sufo_Tyrosine/03_Post_GMM_analysis/"
 data_dir <- "C:/Users/jtzve/Desktop/Sufo_Tyrosine/03_Post_GMM_analysis/data/02_medium bins/"
@@ -334,7 +335,7 @@ names(cleaned_postGMM_data) <- names(postGMM_data)
 
 ```
 
-```{r Prefiltering_of_Tyrosine_containing_only}
+```{r Prefiltering_of_PhosphoTyrosine_containing_only}
 
 bin_of_interest <- cleaned_postGMM_data[["mz_-0.013_-0.007"]]
 
@@ -344,9 +345,9 @@ bin_of_interest <- cleaned_postGMM_data[["mz_-0.013_-0.007"]]
 # all tyrosine-containing peptidoforms, not just these assigned to have a 
 # phosphotyrosine because some phosphogroups assigned to be positionally on a 
 # Threonine or Serine might actually be on a Tyrosine. 
-tyrosines_containing_foreground <- bin_of_interest[grepl("Y", bin_of_interest$peptidoform_id), ]
+tyrosines_containing_foreground <- bin_of_interest[grepl("Y2", bin_of_interest$peptidoform_id), ]
 # Save as a TSV file
-write.table(tyrosines_containing_foreground, file = paste0(project_dir,"out/medium_bins/mz_-0.013_-0.007_tyrosine_containing_foreground.tsv"), sep = "\t", row.names =  FALSE, col.names = TRUE, quote = FALSE)
+write.table(tyrosines_containing_foreground, file = paste0(project_dir,"out/medium_bins/mz_-0.013_-0.007_phosphotyrosine_containing_foreground.tsv"), sep = "\t", row.names =  FALSE, col.names = TRUE, quote = FALSE)
 
 
 # for background we only want phosphotyrosines but from across ALL bins
@@ -354,10 +355,10 @@ write.table(tyrosines_containing_foreground, file = paste0(project_dir,"out/medi
 tyrosines_containing_background <- bind_rows(cleaned_postGMM_data) %>% distinct()
 
 # filter down to only include phosphotyrosine-containing peptides
-tyrosines_containing_background <- tyrosines_containing_background[grepl("Y", tyrosines_containing_background$peptidoform_id), ]
+tyrosines_containing_background <- tyrosines_containing_background[grepl("Y2", tyrosines_containing_background$peptidoform_id), ]
 
 # save 
-write.table(tyrosines_containing_background, file = paste0(project_dir,"out/medium_bins/tyrosine_containing_background.tsv"), 
+write.table(tyrosines_containing_background, file = paste0(project_dir,"out/medium_bins/phopshotyrosine_containing_background.tsv"), 
             sep = "\t", row.names =  FALSE, col.names = TRUE, quote = FALSE)
 
 
@@ -549,18 +550,17 @@ tyrosines_containing_foreground$cleaned_protein_IDs <- flattened_foreground_clea
 # filter to only include rows with SwissProt Entry hits
 tyrosines_containing_foreground_inSwissProt <- tyrosines_containing_foreground[tyrosines_containing_foreground$cleaned_protein_IDs %in% Swiss_Prot_Human$Entry,]
 # Then write the data frame to a file
-write.table(tyrosines_containing_foreground_inSwissProt, file = "../out/medium_bins/tyrosine_containing_foreground_inSwissProt.tsv", sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
+write.table(tyrosines_containing_foreground_inSwissProt, file = "../out/medium_bins/phosphotyrosine_containing_foreground_inSwissProt.tsv", sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
 
 # also write the ones with no hit
 tyrosines_containing_foreground_UNMATCHED <- tyrosines_containing_foreground[!tyrosines_containing_foreground$cleaned_protein_IDs %in% Swiss_Prot_Human$Entry,]
 
 
-write.table(tyrosines_containing_foreground_UNMATCHED, file = "../out/medium_bins/tyrosine_containing_foreground_UNMATCHED.tsv", sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
+write.table(tyrosines_containing_foreground_UNMATCHED, file = "../out/medium_bins/phosphotyrosine_containing_foreground_UNMATCHED.tsv", sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
 
 
 
 ```
-
 
 ```{r proteinID_background}
 
@@ -586,13 +586,13 @@ tyrosines_containing_background$cleaned_protein_IDs <- flattened_background_clea
 # filter to only include rows with SwissProt Entry hits
 tyrosines_containing_background_inSwissProt <- tyrosines_containing_background[tyrosines_containing_background$cleaned_protein_IDs %in% Swiss_Prot_Human$Entry,]
 # Then write the data frame to a file
-write.table(tyrosines_containing_background_inSwissProt, file = "../out/medium_bins/tyrosine_containing_background_inSwissProt.tsv", sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
+write.table(tyrosines_containing_background_inSwissProt, file = "../out/medium_bins/phosphotyrosine_containing_background_inSwissProt.tsv", sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
 
 # also write the ones with no hit
 tyrosines_containing_background_UNMATCHED <- tyrosines_containing_background[!tyrosines_containing_background$cleaned_protein_IDs %in% Swiss_Prot_Human$Entry,]
 
 
-write.table(tyrosines_containing_background_UNMATCHED, file = "../out/medium_bins/tyrosine_containing_background_UNMATCHED.tsv", sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
+write.table(tyrosines_containing_background_UNMATCHED, file = "../out/medium_bins/phosphotyrosine_containing_background_UNMATCHED.tsv", sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
 
 ```
 
@@ -601,14 +601,16 @@ library(clusterProfiler)
 library(org.Hs.eg.db)
 library(biomaRt)
 library(devtools)
+# library(BiocFileCache)
+# library(dbplyr)
 # need to downgrade devtools for biomart to work #stackoverflow
 # devtools::install_version("dbplyr", version = "2.3.4")
 
 
 ## convert the SwissProt IDs to Ensembl gene IDs
 # Connect to the Ensembl database
-ensembl <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
-
+# ensembl <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
+ensembl <- useEnsembl(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
 
 # Get the corresponding Entrez IDs for all UniProt IDs that we can
 Uniprot = getBM(
@@ -655,8 +657,8 @@ cluster_GO_MF <- enrichGO(gene         = foreground_genes,
                        keyType      = "ENSEMBL", #just to make sure
                        ont          = "MF",  # For Biological Process; can use "MF" for Molecular Function or "CC" for Cellular Component
                        pAdjustMethod = "BH", # Benjamini-Hochberg
-                       pvalueCutoff = 0.05,
-                       qvalueCutoff = 0.05)
+                       pvalueCutoff = 0.5,
+                       qvalueCutoff = 1)
 
 
 ########### now for molecular function
@@ -671,8 +673,8 @@ cluster_GO_CC <- enrichGO(gene         = foreground_genes,
                        keyType      = "ENSEMBL", #just to make sure
                        ont          = "CC",  # For Biological Process; can use "MF" for Molecular Function or "CC" for Cellular Component
                        pAdjustMethod = "BH", # Benjamini-Hochberg
-                       pvalueCutoff = 0.05,
-                       qvalueCutoff = 0.05)
+                       pvalueCutoff = 1,
+                       qvalueCutoff = 1)
 
 GO_term_dataframe_CC <- as.data.frame(cluster_GO_CC)
 
@@ -686,8 +688,8 @@ cluster_GO_BP <- enrichGO(gene         = foreground_genes,
                        keyType      = "ENSEMBL", #just to make sure
                        ont          = "BP",  # For Biological Process; can use "MF" for Molecular Function or "CC" for Cellular Component
                        pAdjustMethod = "BH", # Benjamini-Hochberg
-                       pvalueCutoff = 0.05,
-                       qvalueCutoff = 0.05)
+                       pvalueCutoff = 1,
+                       qvalueCutoff = 1)
 
 GO_term_dataframe_BP <- as.data.frame(cluster_GO_BP)
 
@@ -780,7 +782,7 @@ kegg_enrichment <- enrichKEGG(
 gene = foreground_entrez_ids,
 universe = background_entrez_ids,
 organism = 'hsa',
-pvalueCutoff = 0.5, ##changed so the top 2 hits would appear; this is adjusted p value!
+pvalueCutoff = 1, ##changed so the top 2 hits would appear; this is adjusted p value!
 qvalueCutoff = 1 # this does not affect anything
 )
 # dotplot(kegg_enrichment, showCategory = 10, font.size = 8)
@@ -796,7 +798,7 @@ dotplot(kegg_enrichment, showCategory = 10, font.size = 8) # returns only top 2
 # extract df
 KEGG_df <- kegg_enrichment@result
 # filter down to just p<0.05
-KEGG_Significant_Pathways <- KEGG_df[KEGG_df$pvalue <0.05,]
+KEGG_Significant_Pathways <- KEGG_df[KEGG_df$pvalue <0.1,]
 names(KEGG_Significant_Pathways)
 
 # convert gene ratios to numbers
@@ -815,10 +817,9 @@ ggplot(KEGG_Significant_Pathways, aes(y = reorder(Description, -pvalue), x = Gen
     plot.title = element_text(hjust = 0.5)
   ) +
   ggtitle("KEGG Pathways with p<0.05")
-ggsave("../out/medium_bins/KEGG_dotplot_bw.png", plot = last_plot(), width = 6, height = 4, dpi = 300)
+ggsave("../out/medium_bins/KEGG_dotplot_bw_phosphotyrosinesonly.png", plot = last_plot(), width = 6, height = 4, dpi = 300)
 
 ```
-
 
 ```{r Reactome_ORA}
 library(ReactomePA)
@@ -834,9 +835,6 @@ head(reactome_ORA)
 
 
 ```
-
-
-
 
 ```{r PHOSPHOTYROSINE_ONLY}
 # what if we tried phosphotyrosines only for foreground and background:
@@ -872,4 +870,3 @@ phosphotyrosine_backg <- background[grepl("Y2", background$peptidoform_id), ]
 #### could our data suggest sulfation of other amino acids at all? 
 
 ```
-

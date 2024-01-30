@@ -98,7 +98,7 @@ extract_surrounding_seqs_for_each_Y <- function(full_seq, peptide_seq) {
 
 ##### Kerry's function for making the plots:
 perform_motif_analysis <- function(fg.seqs, bg.seqs) {
-    mot <- motifx(fg.seqs, bg.seqs, central.res = 'ST', min.seqs = 20, pval.cutoff = 1e-6)
+    mot <- motifx(fg.seqs, bg.seqs, central.res = 'Y', min.seqs = 15, pval.cutoff = 0.05)
     
     plots <- list()
     pos <- c("-7","-6","-5","-4","-3","-2","-1","p","1","2","3","4","5","6","7")
@@ -423,14 +423,32 @@ rm("split_DECOYforeground_motifs", "all_DECOYforeground_motifs", "temp_unique_DE
 # For unique_foreground_motifs
 
 ## got error, some motifs might be shorter than 15 amino acid sequences if Y too close to start or end of protein, discard these rare cases.
-unique_foreground_motifs_15aalong <- unique_foreground_motifs[]
+unique_foreground_motifs_15aalong <- unique_foreground_motifs[nchar(unique_foreground_motifs)==15]
 nchar(unique_foreground_motifs)
 
+unique_background_motifs_15aalong <- unique_background_motifs[nchar(unique_background_motifs)==15]
 
-fg_plots <- perform_motif_analysis(unique_foreground_motifs, unique_background_motifs)
+
+unique_DECOYforeground_motifs_15aalong <- unique_DECOYforeground_motifs[nchar(unique_DECOYforeground_motifs)==15]
+
+
+
+# Check the lengths of each k-mer in fg.seqs
+kmer_lengths <- sapply(unique_foreground_motifs_15aalong, nchar)
+
+# Report if there are k-mers of differing lengths
+if(length(unique(kmer_lengths)) > 1) {
+  cat("Foreground k-mers are of varying lengths:\n")
+  print(table(kmer_lengths))
+} else {
+  cat("All foreground k-mers are of the same length.\n")
+}
+
+
+fg_plots <- perform_motif_analysis(unique_foreground_motifs_15aalong, unique_background_motifs_15aalong)
 
 # For unique_DECOYforeground_motifs
-decoy_fg_plots <- perform_motif_analysis(unique_DECOYforeground_motifs, unique_background_motifs)
+decoy_fg_plots <- perform_motif_analysis(unique_DECOYforeground_motifs_15aalong, unique_background_motifs_15aalong)
 
 
 # Display or save plots for foreground motifs
