@@ -1,0 +1,7 @@
+Total number of peptidofotms detected across all data: 2942966
+
+Total number of peptidofotms remaining post-filtering (threshold 50 PSMs): 10833
+
+Total number of peptidofotms remaining post-filtering (threshold 10 PSMs): 75157
+
+## need to implement filtering based on number of datasets

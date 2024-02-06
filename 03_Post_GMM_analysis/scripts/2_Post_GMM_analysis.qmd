@@ -195,11 +195,44 @@ write.csv(results, file = "../out/PTM_proportions_results_by_bin.csv", row.names
 
 ```
 
-```{r plots}
+```{r chi_Squared}
 
-### need some plots to visualise the erichment - barplots? histogram of bins?
+# Calculate total counts of tyrosine-containing peptides and total peptides
+total_tyrosine_containing <- sum(results$tyrosine_containing_peptides_count)
+total_peptides <- sum(results$total_peptidoforms)
 
-### need some statistical test to see if actually significantly more?
+# Expected proportion of tyrosine-containing peptides
+expected_proportion_tyrosine <- total_tyrosine_containing / total_peptides
+
+# Calculate expected counts for each bin
+expected_counts <- results$total_peptidoforms * expected_proportion_tyrosine
+
+# Create a contingency table for the observed and expected counts
+observed_counts <- results$tyrosine_containing_peptides_count
+contingency_table <- rbind(observed_counts, expected_counts)
+
+# Perform the Chi-Squared test
+chi_squared_result <- chisq.test(contingency_table)
+
+# Print the results
+print(chi_squared_result)
+
+
+# Get the standardized residuals
+std_residuals <- chi_squared_result$stdres
+
+# Combine the bin IDs with their respective standardized residuals
+bin_residuals <- data.frame(bin_ID = results$bin_ID, std_residuals)
+
+# Print the standardized residuals for each bin
+print(bin_residuals)
+
+# Optionally, you might want to visualize the residuals to better understand their distribution
+plot(bin_residuals$bin_ID, bin_residuals$std_residuals, type='b', 
+     xlab='Bin ID', ylab='Standardized Residuals', 
+     main='Standardized Residuals per Bin')
+abline(h=0, col='red')
+
 ```
 
 

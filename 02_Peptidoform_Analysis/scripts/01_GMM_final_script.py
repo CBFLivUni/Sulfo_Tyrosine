@@ -100,7 +100,8 @@ for peptidoform_id in filtered_data['peptidoform_id']:
     best_models[peptidoform_id] = {'model': best_gmm, 'bic': best_bic}
 ###############################################
 
-# TODO: add GMM bins and save tata to csv for each.
+# TODO: extract other GMM data - area under the curve, what else? a
+#  and implement filtering based on proportion of area under the curve
 
 ###############################################
 
