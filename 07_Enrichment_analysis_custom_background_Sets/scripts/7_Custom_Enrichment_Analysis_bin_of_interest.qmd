@@ -7,175 +7,19 @@ editor: visual
 ```{r libraries}
 library(tidyverse)
 library(stringr) 
-library(dplyr)
 
 ```
 
 ```{r directories}
-project_dir = "C:/Users/jtzve/Desktop/Sufo_Tyrosine/03_Post_GMM_analysis/"
-data_dir <- "C:/Users/jtzve/Desktop/Sufo_Tyrosine/03_Post_GMM_analysis/data/"
+project_dir = "C:/Users/jtzve/Desktop/Sufo_Tyrosine/07_Enrichment_analysis_custom_background_Sets/"
+data_dir <- "C:/Users/jtzve/Desktop/Sufo_Tyrosine/07_Enrichment_analysis_custom_background_Sets/in/"
 gc()
 ```
 
-```{r functions}
-###### Function to get clean filenames, and round and extract bin boundaries ######
-clean_round_extract <- function(name, index) {
-  
-  #separate the name into pars splitting at _
-  parts <- unlist(strsplit(name, "_"))
- 
-  # Rounding the numbers to the fourth decimal place; lower bin boundary is the 2nd part, upper is the 3rd part
-  lower <- round(as.numeric(parts[2]), 4)
-  upper <- round(as.numeric(parts[3]), 4)
+```{r logic_outline}
 
-  # Storing the boundaries
-  # index = 1
-  lower_boundaries[length(lower_boundaries) + 1] <<- lower
-  upper_boundaries[length(upper_boundaries) + 1] <<- upper
-
-  # Reconstructing the cleaned name (and returning it)
-  return(paste0("mz_", lower, "_", upper))
-}
-
-
-clean_data <- function(data) {
-  for (i in 1:ncol(data)) {
-    cleaned_col <- lapply(data[, i], function(x) {
-      clean_string <- gsub("\\[|\\]|'", "", x)
-      if (i == 5) {
-        clean_string <- gsub(";", ",", clean_string)
-      }
-      elements <- unlist(strsplit(clean_string, ',\\s*'))
-      return(elements)
-    })
-
-    if (i == 2) {
-      data[, i] <- sapply(cleaned_col, function(x) paste(x, collapse = ", "))
-    } else {
-      data[, i] <- sapply(cleaned_col, function(x) paste(unique(x), collapse = ", "))
-    }
-  }
-  return(data)
-}
-
-# function to clean the protein IDs in the Input data
-ProteinIDCleaningFunction <- function(IDs) {
-  
-  # step one, deal with NX_ etries
-  # Remove "NX_" prefix and any the suffix following a dash
-  cleaned_IDs <- gsub("(^NX_[^-]+)-.*", "\\1", IDs)
-
-
-  
-  # step 2, deal with sp/ID/ cases
-  # Keep everything after "sp|" and before the second "|"
-  cleaned_IDs <- gsub(".*sp\\|([^|]+)\\|.*", "\\1", cleaned_IDs)
-  
-  
-  # step 3 deal with gi|315259111|ref|NP_001186752.1| cases 
-  
-  cleaned_IDs <- gsub(".*gi\\|[^|]+\\|ref\\|(NP_[^|]+).*", "\\1", cleaned_IDs)
-  # looks for strings starting with gi and keeps 
-  # all text after the first occurance of NP_ up until but excluding the first subsequent |
-  
-  
-  # # Step 4: Handle cases starting with "CONTRIB" and keep everything after the last underscore "_"
-  # cleaned_IDs <- gsub("^CONTRIB_([^_]+)_.*", "\\1", cleaned_IDs)
-  # ### NB: These are gene names and not UniProt Entry IDs, so we actually want to do that step later and convert from gene name to UniProt ID?
-  # after cleaning,keep only the unique IDs at this stage
-  cleaned_IDs <- unique(cleaned_IDs)
-  
- return(cleaned_IDs)
-}
-
-## for getting next prot and Ref seq IDs from the SwissProt library
-split_ids <- function(string) {
-  # First, try splitting with "; "
-  split_result <- strsplit(string, "; ")
-  # If the length of any split_result is 1, it means there was no "; " to split on
-  # In this case, try splitting with just ";"
-  if (any(sapply(split_result, length) == 1)) {
-    split_result <- strsplit(string, ";")
-  }
-  return(split_result)
-}
-
-## to process a sublist of a list of lists where each sublist is a row cell of 
-# the protein IDs.
-
-# for each sublist of IDs:
-#
-# 1) check if any of the IDs have a hit in Swiss_Prot_Human$Entry
-# if yes replace that sublist with only the IDs with a hit (unlikely to be multiple)
-# 2) if not check if any of the IDs have a hit in Swiss_Prot_Human$neXtProt
-# if yes retrieve the Swiss_Prot_Human$Entry for that row of Siwss_Prot_Human, then retain that Entry ID and replace the sublist with it
-# 3) if not, check if any of the IDs have a hit in Swiss_Prot_Human$RefSeq
-# if yes retrieve the Swiss_Prot_Human$Entry for that row of Siwss_Prot_Human, then retain that Entry ID and replace the sublist with it
-# if not keep the sublist as it is
-
-
-process_sublist <- function(sublist, Swiss_Prot_Human, neXtProt_list, RefSeq_list) {
-  # Check for hits in Swiss_Prot_Human$Entry
-  entry_hits <- sublist[sublist %in% Swiss_Prot_Human$Entry]
-  if (length(entry_hits) > 0) {
-    return(entry_hits)
-  }
-
-
-  # Check for hits in Swiss_Prot_Human$neXtProt
-  for (id in sublist) {
-    if (any(sapply(neXtProt_list, function(x) id %in% x))) {
-      matching_row <- which(sapply(neXtProt_list, function(x) id %in% x))
-      return(Swiss_Prot_Human$Entry[matching_row])
-    }
-  }
-
-  # Check for hits in Swiss_Prot_Human$RefSeq
-  for (id in sublist) {
-    if (any(sapply(RefSeq_list, function(x) id %in% x))) {
-      matching_row <- which(sapply(RefSeq_list, function(x) id %in% x))
-      return(Swiss_Prot_Human$Entry[matching_row])
-    }
-  }
-
-  # If no matches, return the original sublist
-  return(sublist)
-}
-
-
-#### subsetting swiss prot gene ids amnd returning uniprot ones for enrichment
-extractEnsemblGeneIDs <- function(dataSet, uniprotMapping) {
-  # subset to only include IDs present in UniProt mapping
-  subsetData <- dataSet[dataSet$cleaned_protein_IDs %in% uniprotMapping$uniprotswissprot,]
-
-  # match SwissProt IDs in the UniProt data frame to get the position index
-  matchedIndices <- match(subsetData$cleaned_protein_IDs, uniprotMapping$uniprotswissprot)
-
-  # rxtract corresponding ENSEMBL Gene IDs
-  ensemblGeneIDs <- uniprotMapping$ensembl_gene_id[matchedIndices]
-
-  # remove NAs if any (in case some SwissProt IDs didn't have a match)
-  ensemblGeneIDs <- na.omit(ensemblGeneIDs)
-
-  return(ensemblGeneIDs)
-}
-# TODO: turn beow into a function to keep my environment tidy?
-# # List of all objects in the environment
-# all_objects <- ls()
 # 
-# # List of objects to keep (replace these with your actual data object names)
-# data_objects <- c("postGMM_data")
-# 
-# # Objects to remove
-# objects_to_remove <- setdiff(all_objects, data_objects)
-# 
-# # Remove the objects
-# rm(list = objects_to_remove)
-# 
-# # Clear objects_to_remove to clean up
-# rm(objects_to_remove)
-# 
-# rm("all_objects", "data_objects")
+
 
 
 ```
@@ -435,7 +279,6 @@ library(devtools)
 # devtools::install_version("dbplyr", version = "2.3.4")
 
 
-
 ## convert the SwissProt IDs to Ensembl gene IDs
 # Connect to the Ensembl database
 # ensembl <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
@@ -655,29 +498,6 @@ head(reactome_ORA)
 
 
 ```
-
-
-```{r GSEA_ranked_protein_list_custom_background}
-# we need to count how many times a gene id appears to rank the genes in the foreground
-
-# these are all proteins
-foreground_proteins <- tyrosines_containing_foreground_inSwissProt$cleaned_protein_IDs
-
-# create a ranked list where you keep track of how many times a protein appears and rank the ones with highest count as the top rank
-
-# count number of times
-foreground_protein_counts <- table(foreground_proteins)
-
-#convert to DF
-protein_counts_df <- as.data.frame(foreground_protein_counts, stringsAsFactors=FALSE)
-names(protein_counts_df) <- c("ProteinID", "Count")
-
-
-# sort in descending order by count and pull the list of proteins to create a ranked list:
-
-ranked_proteins_list <- protein_counts_df %>% arrange(desc(Count)) %>% pull(Count, ProteinID)
-```
-
 
 ```{r protein_ID_cleaning_by_bin}
 #### DO NOT RUN THIS! THIS IS FOR THE WHOLE BIN NOT JUST PHOSPHOTYROSINE

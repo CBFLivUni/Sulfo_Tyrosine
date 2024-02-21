@@ -49,7 +49,7 @@ for (i in 1:nrow(peptidoforms_potentially_sulfated)) {
   dataset_ids <- strsplit(peptidoforms_potentially_sulfated$dataset_ID[i], ", ")[[1]]
   
   # create a PDF for the current peptidoform id
-  pdf(paste0("histograms_", current_peptidoform_id, ".pdf"))
+  # pdf(paste0("histograms_", current_peptidoform_id, ".pdf"))
   
   # make an empty dataframe for storing merged data for the current peptidoform_id
   merged_data_for_id <- data.frame()
@@ -77,42 +77,42 @@ for (i in 1:nrow(peptidoforms_potentially_sulfated)) {
     merged_data_for_id <- rbind(merged_data_for_id, filtered_data)
     # }
     
-    # add dataset_id and number of rows in filtered_data on the PDF page too
-    grid.text(paste("Dataset ID:", dataset_id, "\nNumber of rows in filtered data:", nrow(filtered_data)),
-              x = 0.1, y = 0.95, just = "left", gp = gpar(fontsize = 10))
-    
-   #  print to page that fewer than 5 PSMs are present in the dataset and
-   # print the filtered data to the page
-    if (nrow(filtered_data) < 6) {
-      text_grob <- grid::textGrob(paste("Fewer than 6 PSMs are present in the dataset for \n",
-                                        current_peptidoform_id, "\nin dataset", dataset_id))
-      table_grob <- gridExtra::tableGrob(filtered_data$calibrated_error)
-      gridExtra::grid.arrange(text_grob, table_grob, ncol = 1)
-    }
+   #  # add dataset_id and number of rows in filtered_data on the PDF page too
+   #  grid.text(paste("Dataset ID:", dataset_id, "\nNumber of rows in filtered data:", nrow(filtered_data)),
+   #            x = 0.1, y = 0.95, just = "left", gp = gpar(fontsize = 10))
+   #  
+   # #  print to page that fewer than 5 PSMs are present in the dataset and
+   # # print the filtered data to the page
+   #  if (nrow(filtered_data) < 6) {
+   #    text_grob <- grid::textGrob(paste("Fewer than 6 PSMs are present in the dataset for \n",
+   #                                      current_peptidoform_id, "\nin dataset", dataset_id))
+   #    table_grob <- gridExtra::tableGrob(filtered_data$calibrated_error)
+   #    gridExtra::grid.arrange(text_grob, table_grob, ncol = 1)
+   #  }
     # Generate and plot histogram
     
     # originally thought I'd only plot the histigrams when a certain number o
     # values is present, but it's better to have all the plots; we do need at least 2 points for the density curve though
     
-    if (nrow(filtered_data) > 1) {
-      mean_calibrated_error <- mean(filtered_data$calibrated_error, na.rm = TRUE)
-      
-      # Create the histogram plot
-      p <- ggplot(filtered_data, aes(x = calibrated_error)) +
-        geom_histogram(bins = 30, fill = "green", color = "darkgreen", aes(y = ..count..)) + # Histogram bars with counts
-        geom_density(aes(y = ..count..), color = "#0072B2", size = 1, adjust = 1/3) + # Overlay density line scaled to counts
-        geom_vline(aes(xintercept = mean_calibrated_error),
-                   color = "#0072B2", linetype = "dashed", size = 1) +
-        geom_text(aes(x = mean_calibrated_error, y = Inf), 
-                  label = paste("Mean:", round(mean_calibrated_error, 4)), 
-                  color = "#0072B2", vjust = -1.5, hjust = 1.1, size = 3.5) +
-        ggtitle(paste("Histogram for", current_peptidoform_id, "\nin dataset", dataset_id)) +
-        xlab("Calibrated Error") +
-        ylab("Count")
-      
-      # Draw the ggplot on the current page
-      print(p)  # this is needed to actually draw the plot in the PDF
-    }
+    # if (nrow(filtered_data) > 1) {
+    #   mean_calibrated_error <- mean(filtered_data$calibrated_error, na.rm = TRUE)
+    #   
+    #   # Create the histogram plot
+    #   p <- ggplot(filtered_data, aes(x = calibrated_error)) +
+    #     geom_histogram(bins = 30, fill = "green", color = "darkgreen", aes(y = ..count..)) + # Histogram bars with counts
+    #     geom_density(aes(y = ..count..), color = "#0072B2", size = 1, adjust = 1/3) + # Overlay density line scaled to counts
+    #     geom_vline(aes(xintercept = mean_calibrated_error),
+    #                color = "#0072B2", linetype = "dashed", size = 1) +
+    #     geom_text(aes(x = mean_calibrated_error, y = Inf), 
+    #               label = paste("Mean:", round(mean_calibrated_error, 4)), 
+    #               color = "#0072B2", vjust = -1.5, hjust = 1.1, size = 3.5) +
+    #     ggtitle(paste("Histogram for", current_peptidoform_id, "\nin dataset", dataset_id)) +
+    #     xlab("Calibrated Error") +
+    #     ylab("Count")
+    #   
+    #   # Draw the ggplot on the current page
+    #   print(p)  # this is needed to actually draw the plot in the PDF
+    # }
     
     
     # 
@@ -139,7 +139,7 @@ for (i in 1:nrow(peptidoforms_potentially_sulfated)) {
     #   print(p)  # this is needed to actually draw the plot in the PDF
     # }
       # add a page break in the PDF for each histogram
-      grid::grid.newpage()
+      # grid::grid.newpage()
       
     # } else {
     #   
@@ -157,9 +157,9 @@ for (i in 1:nrow(peptidoforms_potentially_sulfated)) {
    
   }
   
-  # Close the PDF device
-  dev.off()
+  # # Close the PDF device
+  # dev.off()
   # Write the merged data for the current peptidoform_id to a CSV file
-  write.csv(merged_data_for_id, paste0(project_dir, "../out/merged_data_", current_peptidoform_id, ".csv"), row.names = FALSE)
+  write.csv(merged_data_for_id, paste0(project_dir, "out/merged_data_", current_peptidoform_id, ".csv"), row.names = FALSE)
 }
 
