@@ -150,8 +150,8 @@ for acceptable_range in acceptable_ranges:
 pdf_pages_all_bins = {
     bin_range: PdfPages(f'../output/histograms_post_auc_filtering_bin_{bin_range[0]}_{bin_range[1]}.pdf') for
     bin_range in all_bins}
-# also create a pdf to store all histograms of all peptidoforms
-pdf_pages_all = PdfPages('../output/gmm_models_histograms.pdf')
+# also create a pdf to store all histograms of all peptidoforms - not for this script run
+# pdf_pages_all = PdfPages('../output/gmm_models_histograms.pdf')
 
 # Iterate through all the bins and apply AUC filtering
 for bin_range in all_bins:
@@ -165,16 +165,16 @@ for bin_range in all_bins:
         errors_list = filtered_data[filtered_data['peptidoform_id'] == peptidoform_id]['calibrated_error'].values[0]
         errors_reformatted = np.array(errors_list, dtype=float).reshape(-1, 1)
 
-        # Calculate the total AUC over the current bin for the best model
-        total_auc_bin = sum(gaussian_auc_for_bin(mean, covar, weight, bin_range)
-                            for mean, covar, weight in
-                            zip(model.means_.flatten(), model.covariances_.flatten(), model.weights_))
+        # Calculate the AUC over the current bin for each component of the best model
+        component_aucs = [gaussian_auc_for_bin(mean[0], covar[0][0], weight, bin_range)
+                          for mean, covar, weight in zip(model.means_, model.covariances_, model.weights_)]
 
-        # Calculate AUC as a percentage and round to 2 decimals
-        auc_percentage_bin = round((total_auc_bin / sum(weight for weight in model.weights_)) * 100, 2)
-        auc_percentages_bin.append(auc_percentage_bin)  # and store for future plots
+        # Calculate AUC as a percentage for each component and check if any meets the threshold
+        component_aucs_percentage = [(auc / sum(model.weights_)) * 100 for auc in component_aucs]
+        auc_meets_threshold = any(auc_percentage >= auc_percent_threshold for auc_percentage in component_aucs_percentage)
+
         # Check if the AUC meets the threshold
-        if auc_percentage_bin >= auc_percent_threshold:
+        if auc_meets_threshold:
             filtered_peptidoform_ids.add(peptidoform_id) # if so add the peptidoform to our filtered data
 
             # Start a new figure for each peptidoform
@@ -202,12 +202,14 @@ for bin_range in all_bins:
 
             # add title and AUC to the figure
             plt.title(f'Best Fit for Peptidoform ID: {peptidoform_id} in Bin {bin_range}')
-            plt.text(0.05, 0.95, f'AUC: {auc_percentage_bin}%', transform=plt.gca().transAxes, fontsize=10,
+            # round AUCs first
+            auc_percentages_to_plot = [round((auc / sum(model.weights_)) * 100, 2) for auc in component_aucs]
+            plt.text(0.05, 0.95, f'AUCs: {auc_percentages_to_plot}%', transform=plt.gca().transAxes, fontsize=10,
                      verticalalignment='top')
 
             # Save the current figure to the PDF for the current bin
             pdf_pages_all_bins[bin_range].savefig()
-            pdf_pages_all.savefig()  # Save each histogram to the all-inclusive PDF
+            # pdf_pages_all.savefig()  # Save each histogram to the all-inclusive PDF, not in this run
             plt.close()
 
     # Print the number of peptidoforms with AUC >= auc_percent_threshold for the current bin
@@ -241,5 +243,5 @@ for bin_range in all_bins:
 for pdf in pdf_pages_all_bins.values():
     pdf.close()
 
-pdf_pages_all.close()
+# pdf_pages_all.close() # we never opened this one
 logging.info('PDF files have been saved in output folder.')

@@ -1,0 +1,467 @@
+---
+title: "Post_GMM_Analysis"
+format: pdf
+editor: visual
+---
+
+```{r libraries, echo=FALSE}
+library(tidyverse)
+library(stringr) 
+library(dplyr)
+# library(clusterProfiler)
+# library(org.Hs.eg.db)
+# library(biomaRt)
+# library(devtools)
+# # BiocManager::install("enrichplot")
+# library(enrichplot)
+# library(BiocFileCache)
+# library(dbplyr)
+# need to downgrade devtools for biomart to work #stackoverflow
+# devtools::install_version("dbplyr", version = "2.3.4")
+```
+
+```{r functions}
+# get_dataset_counts
+
+
+```
+
+```{r directories, echo=FALSE}
+project_dir = "C:/Users/jtzve/Desktop/Sufo_Tyrosine/08_instrument_enrichment//"
+data_dir <- "C:/Users/jtzve/Desktop/Sufo_Tyrosine/08_instrument_enrichment/in/"
+gc()
+```
+
+```{r data_read_in_and_subsetting}
+########## METADATA #################
+# all metadata from protein atlas
+metadata <- read.csv(file = paste0(data_dir, "human_phosphobuild_metadata.csv"), 
+                            header = TRUE,
+                    )
+
+
+# instrument metadata - manually collected
+instrument_metadata <- read.csv(file = paste0(data_dir, "instrument_metadata.csv"),
+                                header = TRUE,
+                                )
+
+
+##################### BIN DATA #####################
+# bin of interest
+BOI <- read.csv(file = paste0(data_dir, "tyrosine_containing_foreground_inSwissProt.tsv"), 
+                            header = TRUE,
+                            sep = "\t"
+                            )
+
+
+# one bin left
+DECOY_minus1 <- read.csv(file = paste0(data_dir, "tyrosine_containing_DECOY_minus1_inSwissProt.tsv"), 
+                            header = TRUE,
+                            sep = "\t"
+                            )
+
+DECOY_minus2 <- read.csv(file = paste0(data_dir, "tyrosine_containing_DECOY_minus2_inSwissProt.tsv"),
+                            header = TRUE,
+                            sep = "\t"
+                            ) ## not read in as no unique entries not already in decoy minus 1
+
+# mirror bin to BOI
+DECOY1 <- read.csv(file = paste0(data_dir, "tyrosine_containing_DECOY1_inSwissProt.tsv"), 
+                            header = TRUE,
+                            sep = "\t"
+                            )
+DECOY2 <- read.csv(file = paste0(data_dir, "tyrosine_containing_DECOY2_inSwissProt.tsv"), 
+                            header = TRUE,
+                            sep = "\t"
+                            )
+
+DECOY3 <- read.csv(file = paste0(data_dir, "tyrosine_containing_DECOY3_inSwissProt.tsv"), 
+                            header = TRUE,
+                            sep = "\t"
+                            )
+
+all_bins_background <- read.csv(file = paste0(data_dir, "tyrosine_containing_background_inSwissProt.tsv"), 
+                            header = TRUE,
+                            sep = "\t"
+                            )
+
+
+
+
+
+```
+
+```{r data_tidying_for_chi_squared}
+# we need the data with bins in rows and counts in columns.
+# we need counts split into a few different categories - instrument name, one column for each,
+# and then based on factors - sensitivity (documentation), and sensitivity (chatGPT)
+# then we run a bunch of chi squared tests
+
+
+# first we should create a df for each bin where we get all useful counts
+
+# lets start with the bin of interest
+
+# we have a number of datasets per peptidoform ID; 
+# we might need the peptidoform ID granularity in the future
+BOI_datasets <- unique(BOI$dataset_ID)
+# BOI_datasets[1]
+# [1] "PXD005336-DoseDependentCompPulldown-H-L, PXD005336-DoseDependentCompPulldown-BC, PXD005336-DoseDependentCompPulldown-QRS, PXD005336-DoseDependentCompPulldown-T-Y, PXD005336-DoseDependentCompPulldown-DEG, PXD001333-Hela_Kyoto, PXD005336-DoseDependentCompPulldown-M-P, PXD005336-DoseDependentCompPulldown-A"
+
+# apply to every row a function that splits the string into a list of datasets; separator is ', '
+BOI_datasets_split <- strsplit(as.character(BOI_datasets), ", ")
+# > BOI_datasets_split[[1]]
+# [1] "PXD005336-DoseDependentCompPulldown-H-L" "PXD005336-DoseDependentCompPulldown-BC" 
+# [3] "PXD005336-DoseDependentCompPulldown-QRS" "PXD005336-DoseDependentCompPulldown-T-Y"
+# [5] "PXD005336-DoseDependentCompPulldown-DEG" "PXD001333-Hela_Kyoto"                   
+# [7] "PXD005336-DoseDependentCompPulldown-M-P" "PXD005336-DoseDependentCompPulldown-A"
+
+# well, we will run into some problems actually - experiment tags are currently 
+# split into some sub groups for very large datasets - in this case the IDs dont match 
+# the metadata IDs (see below)
+
+# > metadata[metadata$Dataset == "PXD005336", c("Dataset","Experiment.Tag","Instrument.Name")]
+#       Dataset                                     Experiment.Tag    Instrument.Name
+# 299 PXD005336 Hs_ClinicalKinaseInhibitors-CompetitionPulldown-p1         Q Exactive
+# 300 PXD005336 Hs_ClinicalKinaseInhibitors-CompetitionPulldown-p2         Q Exactive
+# 301 PXD005336 Hs_ClinicalKinaseInhibitors-CompetitionPulldown-p3         Q Exactive
+# 302 PXD005336 Hs_ClinicalKinaseInhibitors-CompetitionPulldown-p4         Q Exactive
+# 303 PXD005336 Hs_ClinicalKinaseInhibitors-CompetitionPulldown-p5         Q Exactive
+# 304 PXD005336 Hs_ClinicalKinaseInhibitors-CompetitionPulldown-p6         Q Exactive
+# 305 PXD005336 Hs_ClinicalKinaseInhibitors-CompetitionPulldown-p7         Q Exactive
+# 306 PXD005336                        EGFR_BT474_phos-Fe-IMAC_TMT    Orbitrap Fusion
+# 307 PXD005336                Hs_ClinicalKinaseInhibitors-COLO205         Q Exactive
+# 308 PXD005336                   Hs_ClinicalKinaseInhibitors-K562         Q Exactive
+# 309 PXD005336               Hs_ClinicalKinaseInhibitors-SK-N-BE2         Q Exactive
+# 310 PXD005336                         NSCLC_Kinase-enrich_Cancer LTQ Orbitrap Velos
+# 311 PXD005336                        NSCLC_Kinase-enrich_Control LTQ Orbitrap Velos
+
+
+# I am assuming -p1 to -p7 and the alphabetic order of the letter prefixes could 
+# give us the correct match, although in this case it does not matter - the 
+# instrument is the same. however, ibnstruments differ fot experiment tags within
+# the same project. 
+
+# nevertheless, the IDs are completely different. for these cases where there is
+# no match it might be best to do the instrument assignment manually. 
+
+# further problems as dataset IDs are sometimes multiple in the metadata, split by ','
+
+# initialise empty df to store additional data data wiht peptidoform granularity
+BOI_expanded_data <- data.frame(
+                            # peptidoform_id = character(), 
+                            Experiment_Tag = character(),
+                            dataset_id = character(),
+                            stringsAsFactors=FALSE)
+
+# lets look at every datasetID_experimentTag in our BOI data for each peptidoform
+for(i in seq_along(BOI_datasets_split)) {
+    # get the vector of dataset_experiemtnalTags
+ 
+    datasets <- BOI_datasets_split[[i]]
+    # populate the peptidoform id column 
+    # peptidoform_id <- rep(BOI$peptidoform_id[i], length(datasets))
+    
+    # split each item at the first '-' - the bit on the left is dataset ID, everything else on the right including subsequent - is Experiment Tag 
+    dataset_ids <- sapply(datasets, function(x) strsplit(x, "-", fixed=TRUE)[[1]][1])
+    experiment_tags <- sapply(datasets, function(x) {
+        parts <- strsplit(x, "-", fixed=TRUE)[[1]]
+        paste(parts[-1], collapse="-")
+    })
+      
+    temp_data <- data.frame(peptidoform_id = peptidoform_id, 
+               Experiment_Tag = experiment_tags,
+               dataset_id = dataset_ids,
+               stringsAsFactors=FALSE)
+    
+    BOI_expanded_data <- rbind(BOI_expanded_data, temp_data)
+}
+
+# Every Experiment Tag should have a match in metadata$Experiment.Tag. get the associated metadata$Instrument.Name for each 
+# preallocate column
+BOI_expanded_data$Instrument_Name <- NA
+
+
+for(i in 1:nrow(BOI_expanded_data)) {
+    experiment_tag <- BOI_expanded_data$Experiment_Tag[i]
+    matching_row <- metadata[metadata$Experiment.Tag == experiment_tag,]
+    if(nrow(matching_row) > 0) {
+        BOI_expanded_data$Instrument_Name[i] <- matching_row$Instrument.Name[1]
+    }
+}
+
+# save the data and manually deal with NAs. 
+write.csv(BOI_expanded_data, file = "../out/BOI_instruments_by_peptidoform.csv", row.names = TRUE)
+
+
+# save the data as bin_of_iterest_with_instruments.csv
+
+# add the 
+
+
+```
+
+```{r ORA_specificsY_subgroups}
+ORA_BOI <- enricher(BOI_foreground,
+                    pvalueCutoff = 1,
+                    pAdjustMethod = "BH",
+                    minGSSize = 5,
+                    maxGSSize = 50000,
+                    qvalueCutoff = 1,
+                    TERM2GENE=termAssociations_df,
+                    universe=background_proteins)
+
+ORA_BOI_result <- ORA_BOI@result
+write.csv(ORA_BOI_result, "ORA_BOI_result.csv", row.names = FALSE)
+
+# decpy minus 1 - not really any point doing this one too since counts too few
+ORA_DM1 <- enricher(DM1_foreground_proteins,
+                         pvalueCutoff = 1,
+                         pAdjustMethod = "BH",
+                         minGSSize = 5,
+                         maxGSSize = 50000,
+                         qvalueCutoff = 1,
+                         TERM2GENE=termAssociations_df,
+                         universe=background_proteins)
+
+ORA_DM1_result <- ORA_DM1@result
+write.csv(ORA_DM1_result, "ORA_DM1_result.csv", row.names = FALSE)
+
+# no point doing for decoy -2 - only 2 proteins
+
+
+# DECOY1
+ORA_D1 <- enricher(D1_foreground_proteins,
+                         pvalueCutoff = 1,
+                         pAdjustMethod = "BH",
+                         minGSSize = 1,
+                         maxGSSize = 50000,
+                         qvalueCutoff = 1,
+                         TERM2GENE=termAssociations_df,
+                         universe=background_proteins)
+
+
+ORA_D1_result <- ORA_D1@result
+write.csv(ORA_D1_result, "ORA_D1_result.csv", row.names = FALSE)
+
+
+# DECOY2
+ORA_D2 <- enricher(D2_foreground_proteins,
+                         pvalueCutoff = 1,
+                         pAdjustMethod = "BH",
+                         minGSSize = 1,
+                         maxGSSize = 50000,
+                         qvalueCutoff = 1,
+                         TERM2GENE=termAssociations_df,
+                         universe=background_proteins)
+
+
+ORA_D2_result <- ORA_D2@result
+write.csv(ORA_D2_result, "ORA_D2_result.csv", row.names = FALSE)
+
+
+# DECOY3
+ORA_D3 <- enricher(D3_foreground_proteins,
+                         pvalueCutoff = 1,
+                         pAdjustMethod = "BH",
+                         minGSSize = 1,
+                         maxGSSize = 50000,
+                         qvalueCutoff = 1,
+                         TERM2GENE=termAssociations_df,
+                         universe=background_proteins)
+
+
+ORA_D3_result <- ORA_D3@result
+write.csv(ORA_D3_result, "ORA_D3_result.csv", row.names = FALSE)
+
+```
+
+```{r ORA_merged_bin_genes}
+# what if we grouped the bin of interest and bin to the left results since some 
+# doubly sulfated have slipped there?
+combined_BOI__DM1 <- c(BOI_foreground_proteins, DM1_foreground_proteins) %>% unique()
+
+ORA_combined_BOI__DM1 <- enricher(combined_BOI__DM1,
+                         pvalueCutoff = 1,
+                         pAdjustMethod = "BH",
+                         minGSSize = 5,
+                         maxGSSize = 50000,
+                         qvalueCutoff = 1,
+                         TERM2GENE=termAssociations_df,
+                         universe=background_proteins)
+combined_BOI__DM1_ORA_results <- ORA_combined_BOI__DM1@result
+write.csv(combined_BOI__DM1_ORA_results, "combined_BOI__DM1_ORA_results.csv", row.names = FALSE)
+
+dotplot(ORA_combined_BOI__DM1, showCategory=5) 
+
+
+
+# same for bins on the plus side? 
+
+plusDECOYS_all <- c(D1_foreground_proteins, D2_foreground_proteins, D3_foreground_proteins) %>% unique()
+
+ORA_plusDECOYS_all <- enricher(plusDECOYS_all,
+                         pvalueCutoff = 1,
+                         pAdjustMethod = "BH",
+                         minGSSize = 1,
+                         maxGSSize = 50000,
+                         qvalueCutoff = 1,
+                         TERM2GENE=termAssociations_df,
+                         universe=background_proteins)
+ORA_plusDECOYS_all_results <- ORA_plusDECOYS_all@result
+write.csv(ORA_plusDECOYS_all_results, "ORA_plusDECOYS_all_results.csv", row.names = FALSE)
+
+dotplot(enrichResult_plusDECOYS, showCategory=5)
+
+```
+
+```{r likely_sY_ORA_grouped_terms}
+
+# set new terms - keep unlikely_sY as before and mutate all instances of 
+# likely_sY and known_sY as the general term 'likely_sY'
+
+grouped_term_associations_df <- termAssociations_df %>%
+  mutate(term = if_else(term == 'unlikely_sY', 'unlikely_sY', 'likely_sY')) %>%
+  unique()
+
+
+# use this new mapping for ORA 
+ORA_combined_BOI__DM1_grouped_terms <- enricher(combined_BOI__DM1,
+                         pvalueCutoff = 1,
+                         pAdjustMethod = "BH",
+                         minGSSize = 5,
+                         maxGSSize = 50000,
+                         qvalueCutoff = 1,
+                         TERM2GENE=grouped_term_associations_df,
+                         universe=background_proteins)
+combined_BOI__DM1_ORA_grouped_terms_results <- ORA_combined_BOI__DM1_grouped_terms@result
+write.csv(combined_BOI__DM1_ORA_grouped_terms_results, "combined_BOI__DM1_ORA_grouped_terms_results.csv", row.names = FALSE)
+
+dotplot(ORA_combined_BOI__DM1_grouped_terms, showCategory=5)
+
+
+# combined DECOYS
+
+ORA_plusDECOYS_all_grouped_terms <- enricher(plusDECOYS_all,
+                         pvalueCutoff = 1,
+                         pAdjustMethod = "BH",
+                         minGSSize = 1,
+                         maxGSSize = 50000,
+                         qvalueCutoff = 1,
+                         TERM2GENE=grouped_term_associations_df,
+                         universe=background_proteins)
+ORA_plusDECOYS_all_grouped_terms_results <- ORA_plusDECOYS_all_grouped_terms@result
+write.csv(ORA_plusDECOYS_all_grouped_terms_results, "ORA_plusDECOYS_all_grouped_terms_results.csv", row.names = FALSE)
+
+dotplot(ORA_plusDECOYS_all_grouped_terms, showCategory=5)
+
+```
+
+```{r GSEA_ranked_protein_list_custom_background}
+# # testing code to write GSEA fucntion
+
+# we need to count how many times a gene id appears to rank the genes in the foreground
+# 
+# # these are all proteins
+# foreground_proteins <- BOI_foreground_proteins
+# 
+# # create a ranked list where you keep track of how many times a protein appears and rank the ones with highest count as the top rank
+# 
+# # count number of times
+# foreground_protein_counts <- table(foreground_proteins)
+# class(foreground_protein_counts)
+# 
+# #convert to df
+# protein_counts_df <- as.data.frame(foreground_protein_counts, stringsAsFactors=FALSE)
+# names(protein_counts_df) <- c("ProteinID", "Count")
+# 
+# 
+# # sort in descending order by count and pull the list of proteins to create a ranked list:
+# 
+# ranked_proteins_list <- protein_counts_df %>% arrange(desc(Count)) %>% pull(Count, ProteinID)
+# 
+# 
+# # carry out GSEA
+# GSEA_BOI <- GSEA( ranked_proteins_list,
+#                   exponent = 1,
+#                   minGSSize = 5,
+#                   maxGSSize = 500,
+#                   eps = 1e-10,
+#                   pvalueCutoff = 1,
+#                   pAdjustMethod = "BH",
+#                   gson = NULL,
+#                   TERM2GENE = termAssociations_df,
+#                   TERM2NAME = NA,
+#                   verbose = TRUE,
+#                   seed = FALSE,
+#                   by = "fgsea",
+#                   scoreType = "pos"
+#                 )
+# 
+
+```
+
+```{r GSEA}
+
+## idea: to diminish the effect of the rank order, we could swap the order for proteins with equal counts randomly n times and run the analysis n times, then get the average outcome for the results?? 
+
+
+
+# bin of interest
+GSEA_BOI <- counts_based_GSEA(BOI_foreground_proteins, termAssociations_df)
+GSEA_BOI_results <- GSEA_BOI@result
+
+
+GSEA_BOI_grouped_terms <- counts_based_GSEA(BOI_foreground_proteins, grouped_term_associations_df)
+GSEA_BOI_results_grouped_terms <- GSEA_BOI_grouped_terms@result
+
+# combined BOI and DEcoy minus 1 bin
+# combined_BOI__DM1 <- c(BOI_foreground_proteins, DM1_foreground_proteins) 
+
+## this iskind of incorrect - need to remove some of the overlapping terms based 
+# on peptidoform id; only proteins associated to unique ids to decoy-1 bin to be added
+new_peptidoforms <- setdiff(DECOY_minus1$peptidoform_id, bin_of_interest$peptidoform_id)
+new_proteins <- DECOY_minus1$cleaned_protein_IDs[DECOY_minus1$peptidoform_id %in% new_peptidoforms]
+combined_BOI_DM1_forGSEA <- c(BOI_foreground_proteins, new_proteins)
+
+GSEA_BOU_DM1 <- counts_based_GSEA(combined_BOI_DM1_forGSEA, termAssociations_df)
+GSEA_BOU_DM1_results <- GSEA_BOU_DM1@result
+
+GSEA_BOU_DM1_grouped_terms <- counts_based_GSEA(combined_BOI_DM1_forGSEA, grouped_term_associations_df)
+GSEA_BOU_DM1_results_grouped_terms <- GSEA_BOU_DM1_grouped_terms@result
+
+## does the likely vs unlikely split make more sense as a chi squared or similar?
+
+
+
+
+
+# DECOYs
+# DECOY1
+GSEA_D1 <- counts_based_GSEA(D1_foreground_proteins, termAssociations_df)
+GSEA_D1_results <- GSEA_D1@result
+
+
+GSEA_D1_grouped_terms <- counts_based_GSEA(D1_foreground_proteins, grouped_term_associations_df)
+GSEA_D1_results_grouped_terms <- GSEA_D1_grouped_terms@result
+
+
+# DECOY2
+GSEA_D2 <- counts_based_GSEA(D2_foreground_proteins, termAssociations_df)
+GSEA_D2_results <- GSEA_D2@result
+
+
+GSEA_D2_grouped_terms <- counts_based_GSEA(D2_foreground_proteins, grouped_term_associations_df)
+GSEA_D2_results_grouped_terms <- GSEA_D2_grouped_terms@result
+
+
+# DECOY3 
+
+GSEA_D3 <- counts_based_GSEA(D3_foreground_proteins, termAssociations_df)
+GSEA_D3_results <- GSEA_D3@result
+
+
+GSEA_D3_grouped_terms <- counts_based_GSEA(D3_foreground_proteins, grouped_term_associations_df)
+GSEA_D3_results_grouped_terms <- GSEA_D3_grouped_terms@result
+
+```
