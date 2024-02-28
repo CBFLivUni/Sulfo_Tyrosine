@@ -1,0 +1,368 @@
+---
+title: "Post_GMM_Analysis"
+format: pdf
+editor: visual
+---
+
+```{r libraries, echo=FALSE}
+library(tidyverse)
+library(stringr) 
+library(dplyr)
+# library(clusterProfiler)
+# library(org.Hs.eg.db)
+# library(biomaRt)
+# library(devtools)
+# # BiocManager::install("enrichplot")
+# library(enrichplot)
+# library(BiocFileCache)
+# library(dbplyr)
+# need to downgrade devtools for biomart to work #stackoverflow
+# devtools::install_version("dbplyr", version = "2.3.4")
+```
+
+```{r functions}
+# get_dataset_counts
+get_instruments_by_peptidoform <- function(df, metadata_df, manual_annotations_df) {
+  # df = BOI
+  # metadata_df = metadata
+  # manual_annotations_df = metadata_for_mismatches
+  BOI_datasets <- unique(df$dataset_ID)
+  
+  BOI_datasets_split <- strsplit(as.character(BOI_datasets), ", ")
+  
+  
+    # initialise empty df to store additional data data wiht peptidoform granularity
+  BOI_expanded_data <- data.frame(
+                              peptidoform_id = character(), 
+                              Experiment_Tag = character(),
+                              dataset_id = character(),
+                              stringsAsFactors=FALSE)
+  
+  # lets look at every datasetID_experimentTag in our BOI data for each peptidoform
+  for(i in seq_along(BOI_datasets_split)) {
+      # get the vector of dataset_experiemtnalTags
+   
+      datasets <- BOI_datasets_split[[i]]
+      # populate the peptidoform id column 
+      peptidoform_id <- rep(df$peptidoform_id[i], length(datasets))
+      
+      # split each item at the first '-' - the bit on the left is dataset ID, everything else on the right including subsequent - is Experiment Tag 
+      dataset_ids <- sapply(datasets, function(x) strsplit(x, "-", fixed=TRUE)[[1]][1])
+      experiment_tags <- sapply(datasets, function(x) {
+          parts <- strsplit(x, "-", fixed=TRUE)[[1]]
+          paste(parts[-1], collapse="-")
+      })
+        
+      temp_data <- data.frame(peptidoform_id = peptidoform_id, 
+                 Experiment_Tag = experiment_tags,
+                 dataset_id = dataset_ids,
+                 stringsAsFactors=FALSE)
+      
+      BOI_expanded_data <- rbind(BOI_expanded_data, temp_data)
+  }
+  
+  # Every Experiment Tag should have a match in metadata$Experiment.Tag. get the associated metadata$Instrument.Name for each 
+  # preallocate column
+  BOI_expanded_data$Instrument_Name <- NA
+  
+  
+  for(i in 1:nrow(BOI_expanded_data)) {
+    
+      experiment_tag <- BOI_expanded_data$Experiment_Tag[i]
+      matching_row <- metadata_df[metadata_df$Experiment.Tag == experiment_tag,]
+      if(nrow(matching_row) > 0) {
+          BOI_expanded_data$Instrument_Name[i] <- matching_row$Instrument.Name[1]
+      } else {
+        # match the dataset id to that of the manually annotated metadata
+        temp_dataset_id <- BOI_expanded_data$dataset_id[i]
+        manual_instrument <- manual_annotations_df[manual_annotations_df$dataset_id == temp_dataset_id, "Instrument_Name"] %>% unique()
+        # and assign the corresponding instrument
+        BOI_expanded_data$Instrument_Name[i] <- manual_instrument
+      }
+  }
+
+  
+  return(BOI_expanded_data)
+}
+
+
+
+#### counting n times an instrument has contirbutedto the data in a bin
+
+
+```
+
+```{r directories, echo=FALSE}
+project_dir = "C:/Users/jtzve/Desktop/Sufo_Tyrosine/08_instrument_enrichment//"
+data_dir <- "C:/Users/jtzve/Desktop/Sufo_Tyrosine/08_instrument_enrichment/in/"
+gc()
+```
+
+```{r data_read_in_and_subsetting}
+########## METADATA #################
+# all metadata from protein atlas
+metadata <- read.csv(file = paste0(data_dir, "human_phosphobuild_metadata.csv"), 
+                            header = TRUE,
+                    )
+
+
+# instrument metadata - manually collected
+instrument_metadata <- read.csv(file = paste0(data_dir, "instrument_metadata.csv"),
+                                header = TRUE,
+                                )
+# we only need the first 4 columns where I have split the instruments into groups
+instrument_metadata <- instrument_metadata[,1:4]
+
+metadata_for_mismatches <- read.csv(file = paste0(data_dir, "manually_annotated_exp_tags.csv"),
+                                header = TRUE,
+                                )
+
+##################### BIN DATA #####################
+# bin of interest
+BOI <- read.csv(file = paste0(data_dir, "tyrosine_containing_foreground_inSwissProt.tsv"), 
+                            header = TRUE,
+                            sep = "\t"
+                            )
+
+
+# one bin left
+DECOY_minus1 <- read.csv(file = paste0(data_dir, "tyrosine_containing_DECOY_minus1_inSwissProt.tsv"), 
+                            header = TRUE,
+                            sep = "\t"
+                            )
+
+DECOY_minus2 <- read.csv(file = paste0(data_dir, "tyrosine_containing_DECOY_minus2_inSwissProt.tsv"),
+                            header = TRUE,
+                            sep = "\t"
+                            ) ## not read in as no unique entries not already in decoy minus 1
+
+# mirror bin to BOI
+DECOY1 <- read.csv(file = paste0(data_dir, "tyrosine_containing_DECOY1_inSwissProt.tsv"), 
+                            header = TRUE,
+                            sep = "\t"
+                            )
+DECOY2 <- read.csv(file = paste0(data_dir, "tyrosine_containing_DECOY2_inSwissProt.tsv"), 
+                            header = TRUE,
+                            sep = "\t"
+                            )
+
+DECOY3 <- read.csv(file = paste0(data_dir, "tyrosine_containing_DECOY3_inSwissProt.tsv"), 
+                            header = TRUE,
+                            sep = "\t"
+                            )
+
+all_bins_background <- read.csv(file = paste0(data_dir, "tyrosine_containing_background_inSwissProt.tsv"), 
+                            header = TRUE,
+                            sep = "\t"
+                            )
+
+```
+
+```{r data_tidying_for_chi_squared}
+# # we need the data with bins in rows and counts in columns.
+# # we need counts split into a few different categories - instrument name, one column for each,
+# # and then based on factors - sensitivity (documentation), and sensitivity (chatGPT)
+# # then we run a bunch of chi squared tests
+
+# apply the function to each dataset
+BOI_instruments <- get_instruments_by_peptidoform(df = BOI,
+                               metadata_df = metadata,
+                               manual_annotations_df = metadata_for_mismatches)
+
+DM1_instruments <- get_instruments_by_peptidoform(df = DECOY_minus1,
+                               metadata_df = metadata,
+                               manual_annotations_df = metadata_for_mismatches)
+
+DM2_instruments <- get_instruments_by_peptidoform(df = DECOY_minus2,
+                               metadata_df = metadata,
+                               manual_annotations_df = metadata_for_mismatches)
+
+D1_instruments <- get_instruments_by_peptidoform(df = DECOY1,
+                               metadata_df = metadata,
+                               manual_annotations_df = metadata_for_mismatches)
+
+D2_instruments <- get_instruments_by_peptidoform(df = DECOY2,
+                               metadata_df = metadata,
+                               manual_annotations_df = metadata_for_mismatches)
+
+D3_instruments <- get_instruments_by_peptidoform(df = DECOY3,
+                               metadata_df = metadata,
+                               manual_annotations_df = metadata_for_mismatches)
+
+all_data_instruments <- get_instruments_by_peptidoform(df = all_bins_background,
+                               metadata_df = metadata,
+                               manual_annotations_df = metadata_for_mismatches)
+all_bins_instruments
+
+```
+
+
+```{r contingency_table_generation}
+
+# create a table where every row will be a bin ID 
+contingency_table <- data.frame(bin_ID = c("DM2", "DM1", "BOI", "D1", "D2", "D3", "all_bins"), 
+                              stringsAsFactors=FALSE)
+
+
+# generate a named list of data frames to match the bin ID order
+
+instrument_data_list <- list(
+  DM2 = DM2_instruments, 
+  DM1 = DM1_instruments, 
+  BOI = BOI_instruments, 
+  D1 = D1_instruments, 
+  D2 = D2_instruments, 
+  D3 = D3_instruments, 
+  all_bins = all_data_instruments
+  
+)
+
+# create a column in the cintingency table for every instrument name: 
+# instrument_metadata$Instrument_Name
+
+for (instrument_name in instrument_metadata$Instrument_Name) {
+  contingency_table[[instrument_name]] <- 0
+}
+
+
+
+# for every bin, populate counts
+for (bin_name in names(instrument_data_list)) {
+  # get all instrument data
+    instrument_data <- instrument_data_list[[bin_name]]
+    
+    #for every instrument
+    for (instrument_name in instrument_metadata$Instrument_Name) {
+    # count the number of times an instrument name appears
+      instrument_count <- sum(instrument_data$Instrument_Name == instrument_name)
+      contingency_table[contingency_table$bin_ID == bin_name, instrument_name] <- instrument_count
+    }
+  
+}
+
+
+
+```
+
+
+```{r chi squared tests}
+
+```
+
+```{r creating_instrumnt_annottion_by_peptidoform_function}
+# # this has worked
+# identical(test, BOI_expanded_data)
+# # we need the data with bins in rows and counts in columns.
+# # we need counts split into a few different categories - instrument name, one column for each,
+# # and then based on factors - sensitivity (documentation), and sensitivity (chatGPT)
+# # then we run a bunch of chi squared tests
+# 
+# 
+# # first we should create a df for each bin where we get all useful counts
+# 
+# # lets start with the bin of interest
+# 
+# # we have a number of datasets per peptidoform ID; 
+# # we might need the peptidoform ID granularity in the future
+# BOI_datasets <- unique(BOI$dataset_ID)
+# # BOI_datasets[1]
+# # [1] "PXD005336-DoseDependentCompPulldown-H-L, PXD005336-DoseDependentCompPulldown-BC, PXD005336-DoseDependentCompPulldown-QRS, PXD005336-DoseDependentCompPulldown-T-Y, PXD005336-DoseDependentCompPulldown-DEG, PXD001333-Hela_Kyoto, PXD005336-DoseDependentCompPulldown-M-P, PXD005336-DoseDependentCompPulldown-A"
+# 
+# # apply to every row a function that splits the string into a list of datasets; separator is ', '
+# BOI_datasets_split <- strsplit(as.character(BOI_datasets), ", ")
+# # > BOI_datasets_split[[1]]
+# # [1] "PXD005336-DoseDependentCompPulldown-H-L" "PXD005336-DoseDependentCompPulldown-BC" 
+# # [3] "PXD005336-DoseDependentCompPulldown-QRS" "PXD005336-DoseDependentCompPulldown-T-Y"
+# # [5] "PXD005336-DoseDependentCompPulldown-DEG" "PXD001333-Hela_Kyoto"                   
+# # [7] "PXD005336-DoseDependentCompPulldown-M-P" "PXD005336-DoseDependentCompPulldown-A"
+# 
+# # well, we will run into some problems actually - experiment tags are currently 
+# # split into some sub groups for very large datasets - in this case the IDs dont match 
+# # the metadata IDs (see below)
+# 
+# # > metadata[metadata$Dataset == "PXD005336", c("Dataset","Experiment.Tag","Instrument.Name")]
+# #       Dataset                                     Experiment.Tag    Instrument.Name
+# # 299 PXD005336 Hs_ClinicalKinaseInhibitors-CompetitionPulldown-p1         Q Exactive
+# # 300 PXD005336 Hs_ClinicalKinaseInhibitors-CompetitionPulldown-p2         Q Exactive
+# # 301 PXD005336 Hs_ClinicalKinaseInhibitors-CompetitionPulldown-p3         Q Exactive
+# # 302 PXD005336 Hs_ClinicalKinaseInhibitors-CompetitionPulldown-p4         Q Exactive
+# # 303 PXD005336 Hs_ClinicalKinaseInhibitors-CompetitionPulldown-p5         Q Exactive
+# # 304 PXD005336 Hs_ClinicalKinaseInhibitors-CompetitionPulldown-p6         Q Exactive
+# # 305 PXD005336 Hs_ClinicalKinaseInhibitors-CompetitionPulldown-p7         Q Exactive
+# # 306 PXD005336                        EGFR_BT474_phos-Fe-IMAC_TMT    Orbitrap Fusion
+# # 307 PXD005336                Hs_ClinicalKinaseInhibitors-COLO205         Q Exactive
+# # 308 PXD005336                   Hs_ClinicalKinaseInhibitors-K562         Q Exactive
+# # 309 PXD005336               Hs_ClinicalKinaseInhibitors-SK-N-BE2         Q Exactive
+# # 310 PXD005336                         NSCLC_Kinase-enrich_Cancer LTQ Orbitrap Velos
+# # 311 PXD005336                        NSCLC_Kinase-enrich_Control LTQ Orbitrap Velos
+# 
+# 
+# # I am assuming -p1 to -p7 and the alphabetic order of the letter prefixes could 
+# # give us the correct match, although in this case it does not matter - the 
+# # instrument is the same. however, ibnstruments differ fot experiment tags within
+# # the same project. 
+# 
+# # nevertheless, the IDs are completely different. for these cases where there is
+# # no match it might be best to do the instrument assignment manually. 
+# 
+# # further problems as dataset IDs are sometimes multiple in the metadata, split by ','
+# 
+# # initialise empty df to store additional data data wiht peptidoform granularity
+# BOI_expanded_data <- data.frame(
+#                             # peptidoform_id = character(), 
+#                             Experiment_Tag = character(),
+#                             dataset_id = character(),
+#                             stringsAsFactors=FALSE)
+# 
+# # lets look at every datasetID_experimentTag in our BOI data for each peptidoform
+# for(i in seq_along(BOI_datasets_split)) {
+#     # get the vector of dataset_experiemtnalTags
+#  
+#     datasets <- BOI_datasets_split[[i]]
+#     # populate the peptidoform id column 
+#     peptidoform_id <- rep(BOI$peptidoform_id[i], length(datasets))
+#     
+#     # split each item at the first '-' - the bit on the left is dataset ID, everything else on the right including subsequent - is Experiment Tag 
+#     dataset_ids <- sapply(datasets, function(x) strsplit(x, "-", fixed=TRUE)[[1]][1])
+#     experiment_tags <- sapply(datasets, function(x) {
+#         parts <- strsplit(x, "-", fixed=TRUE)[[1]]
+#         paste(parts[-1], collapse="-")
+#     })
+#       
+#     temp_data <- data.frame(peptidoform_id = peptidoform_id, 
+#                Experiment_Tag = experiment_tags,
+#                dataset_id = dataset_ids,
+#                stringsAsFactors=FALSE)
+#     
+#     BOI_expanded_data <- rbind(BOI_expanded_data, temp_data)
+# }
+# 
+# # Every Experiment Tag should have a match in metadata$Experiment.Tag. get the associated metadata$Instrument.Name for each 
+# # preallocate column
+# BOI_expanded_data$Instrument_Name <- NA
+# 
+# 
+# for(i in 1:nrow(BOI_expanded_data)) {
+#   
+#     experiment_tag <- BOI_expanded_data$Experiment_Tag[i]
+#     matching_row <- metadata[metadata$Experiment.Tag == experiment_tag,]
+#     if(nrow(matching_row) > 0) {
+#         BOI_expanded_data$Instrument_Name[i] <- matching_row$Instrument.Name[1]
+#     } else {
+#       # match the dataset id to that of the manually annotated metadata
+#       temp_dataset_id <- BOI_expanded_data$dataset_id[i]
+#       manual_instrument <- metadata_for_mismatches[metadata_for_mismatches$dataset_id == temp_dataset_id, "Instrument_Name"] %>% unique()
+#       # and assign the corresponding instrument
+#       BOI_expanded_data$Instrument_Name[i] <- manual_instrument
+#     }
+# }
+# 
+# 
+# names(metadata_for_mismatches)
+# 
+# # save the data as bin_of_iterest_with_instruments.csv
+# 
+# # add the 
+```
+
+
