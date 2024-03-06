@@ -1,7 +1,7 @@
 columns_to_plot <- names(results)[4:(ncol(results)-1)]
 
 # Start PDF device
-pdf("../out/BarPlots_byBin_.pdf", width = 11, height = 8.5)
+pdf("../out/BarPlots_byBin_30pc_individual.pdf", width = 11, height = 8.5)
 
 # Loop through each column to create and save the plot
 for (col in columns_to_plot) {

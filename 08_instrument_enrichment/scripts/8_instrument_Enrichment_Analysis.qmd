@@ -107,11 +107,11 @@ metadata <- read.csv(file = paste0(data_dir, "human_phosphobuild_metadata.csv"),
 
 
 # instrument metadata - manually collected
-instrument_metadata <- read.csv(file = paste0(data_dir, "instrument_metadata.csv"),
+instrument_metadata_all <- read.csv(file = paste0(data_dir, "instrument_metadata.csv"),
                                 header = TRUE,
                                 )
 # we only need the first 4 columns where I have split the instruments into groups
-instrument_metadata <- instrument_metadata[,1:4]
+instrument_metadata <- instrument_metadata_all[,1:4]
 
 metadata_for_mismatches <- read.csv(file = paste0(data_dir, "manually_annotated_exp_tags.csv"),
                                 header = TRUE,
@@ -192,7 +192,7 @@ D3_instruments <- get_instruments_by_peptidoform(df = DECOY3,
 all_data_instruments <- get_instruments_by_peptidoform(df = all_bins_background,
                                metadata_df = metadata,
                                manual_annotations_df = metadata_for_mismatches)
-all_bins_instruments
+
 
 ```
 
@@ -240,14 +240,282 @@ for (bin_name in names(instrument_data_list)) {
   
 }
 
+# set row names to remove non numeric col
+rownames(contingency_table) <- contingency_table$bin_ID
+contingency_table <- contingency_table[,-1]
+
+
+##  filtering - some of the instruments aren't represented enough to be meaningful
+# remove columns where less than 50 counts are present in total across the bins 
+# excluding the data for all bins
+contingency_counts_subset <- contingency_table[, colSums(contingency_table[1:6,]) > 50]
+# excluded instruments: 
+
+excluded <- contingency_table[, colSums(contingency_table[1:6,]) <= 50]
+# LTQ FT
+# 
+# LTQ Orbitrap Discovery
+# 
+# Orbitrap Exploris 480
+
+# These are the oldest and newest instruments; they have contributed a small fraction of 
+# the data - present in one dataset each and having between 1 and 3 associated experiment tags.
+excluded_metadata <- metadata[metadata$Instrument.Name %in% names(excluded), ]
+
+
+# we have our observed counts fot a chi sq goodness of fit test, now we need 
+# to generate the vector p (p: a vector of probabilities)
+
+# in our case these probabilities are the expected rations of the instruments (as a fraction of the total data points)
+
+# we can get expected count ratios by dividing the observed number across all bins by the total number of data points across all bins
+# get observed
+all_bins_instrument_counts <- contingency_counts_subset[nrow(contingency_counts_subset),]
+# total is just their sum
+all_bins_total_counts <- sum(all_bins_instrument_counts) # here i have not included the ones that did not pass the > 50 counts filter; is this correct? 
+
+# calculate expected ratios
+expected_count_proportions_by_instrument <- all_bins_instrument_counts/all_bins_total_counts
+
+# i dont think i need this, but good to have just in case
+total_countsL_by_bin <- rowSums(contingency_counts_subset)
 
 
 ```
 
 
 ```{r chi squared tests}
+# NB: plots saved from separate script
+
+# Remove the row for all bins data
+contingency_counts_for_goodness_of_fit <- contingency_counts_subset[-(nrow(contingency_counts_subset)),]
+
+
+# baloonplot
+# 1. convert the data as a table
+dt <- as.table(as.matrix(contingency_counts_for_goodness_of_fit[,]))
+# 2. Graph
+
+# Generate the balloonplot with rotated column labels
+balloonplot(t(dt), main ="Counts by Instrument", xlab ="", ylab="",
+            label = FALSE, show.margins = FALSE,
+            colsrt=90) # Rotate column labels to 90 degrees
+
+#mosaic plot_ v1
+mosaicplot(dt, shade = TRUE, las=2, main = "Counts by Instrument")
+
+# mosaic plot v2
+mosaic(t(dt), shade = TRUE, las=2, main = "Counts by Instrument")
+
+
+goodness_of_fit_results <- chisq.test(contingency_counts_for_goodness_of_fit,
+                                      p = expected_count_proportions_by_instrument[1,])
+
+# > goodness_of_fit_results
+# 
+# 	Pearson's Chi-squared test
+# 
+# data:  contingency_counts_for_goodness_of_fit
+# X-squared = 5135.1, df = 55, p-value < 2.2e-16
+
+# high significance, but we haven't really met the assumption of counts > 5 for a lot of cells
+
+expected_counts <- round(goodness_of_fit_results$expected, 4)
+
+standardised_residuals <- goodness_of_fit_results$stdres # plot in separate script
+
+
+
+assumption_of_5 <- 100*sum(expected_counts >= 5)/sum(expected_counts >= 0)
+# 76.39% of the expected counts meet the condition of being > 5
+# is this large enough to validate use of chi sq? 
+
 
 ```
+
+
+
+```{r goodness_of_fit_by_factor}
+
+# lets look at the different categories we cna group the isntruments by.
+# release year - newer should be more sensitive; here we work with all instruments - before they have been excluded
+table(instrument_metadata_all$release_year)
+# 2011 seems to be the mi-dpoint; I set it to 2010 before when i was collecting the data
+# lets use 2011 
+release_y_factor <- ifelse(instrument_metadata_all$release_year <= 2011, 
+                           "Before 2011", 
+                           "After 2011")
+
+
+instrument_metadata$release_y_factor <- as.factor(release_y_factor)
+
+# we include all instruments. - we already hace the contingency counts
+# create an empty data frame
+contingency_counts_by_factors_releasey <- data.frame(row.names = rownames(contingency_table))
+
+# if the column name of contingency_counts matches instrument_metadata$Instrument_Name for which instrument_metadata$release_y_factor == "Before 2011", sum all counts by row
+
+# Step 1: Create a logical vector for instruments released before 2011 and after
+instruments_before_2011 <- instrument_metadata$Instrument_Name[instrument_metadata$release_y_factor == "Before 2011"]
+instruments_after_2011 <- instrument_metadata$Instrument_Name[instrument_metadata$release_y_factor != "Before 2011"]
+# Step 2: Match these instruments with columns in 'contingency_counts'
+columns_before_2011 <- colnames(contingency_table) %in% instruments_before_2011
+columns_after_2011 <- colnames(contingency_table) %in% instruments_after_2011
+
+# Step 3: Sum counts by row for the matched columns
+contingency_counts_by_factors_releasey$before2011 <- rowSums(contingency_table[, columns_before_2011], na.rm = TRUE)
+contingency_counts_by_factors_releasey$after2011 <- rowSums(contingency_table[, columns_after_2011], na.rm = TRUE)
+
+
+expected_count_proportions_by_instrument_by_factors_releasey <- contingency_counts_by_factors_releasey[7,]/sum(contingency_counts_by_factors_releasey[7,])
+
+
+
+
+goodness_of_fit_by_year <- chisq.test(contingency_counts_by_factors_releasey[-7,],
+           p = expected_count_proportions_by_instrument_by_factors_releasey[1,])
+
+
+expected_by_year <- goodness_of_fit_by_year$expected
+goodness_of_fit_by_year$residuals
+
+# to plot 
+
+```
+
+
+
+
+
+```{r}
+
+table(instrument_metadata_all$SpecDocs_mass_accuracy_external_cal)
+# most instruments are sub 3 ppm,  not really a point of including in analysis?
+
+table(instrument_metadata_all$SpecDocs_mass_accuracy_internal_cal)
+# maybe we can split to sub 1 ppm internal vs > 1 ppm; only 4 instruments > 1 ppm
+instrument_metadata_all$Instrument_Name[instrument_metadata_all$SpecDocs_mass_accuracy_internal_cal > 1]
+
+# Add factor for internal calibration sensitivity (sub 1 ppm vs > 1 ppm)
+instrument_metadata_all$internal_cal_factor <- ifelse(instrument_metadata_all$SpecDocs_mass_accuracy_internal_cal > 1, "Above 1 ppm", "Sub 1 ppm")
+
+
+instruments_int_cal_over1 <- instrument_metadata_all$Instrument_Name[instrument_metadata_all$internal_cal_factor == "Above 1 ppm"]
+instruments_int_cal_under1 <- instrument_metadata_all$Instrument_Name[instrument_metadata_all$internal_cal_factor == "Sub 1 ppm"]
+
+# Step 2: Sum counts by row for the matched columns
+contingency_counts_by_intcal <
+
+
+contingency_counts_by_intcal$instruments_int_cal_over1 <- rowSums(contingency_table[, instruments_int_cal_over1], na.rm = TRUE)
+contingency_counts_by_intcal$instruments_int_cal_under1 <- rowSums(contingency_table[, instruments_int_cal_under1], na.rm = TRUE)
+
+
+```
+
+
+```{r}
+
+# these calibrations are not specific to MS2 acqisitions; havent looked at the publications, but asked chatGPT for general numbers - NB: these may be wrong
+table(instrument_metadata_all$ChatGPT_mass_acc_ext_MSMS)
+# sub 5 ppm vs worse might be a good split here
+instrument_metadata_all$Instrument_Name[instrument_metadata_all$ChatGPT_mass_acc_ext_MSMS > 5]
+
+#not identical to 1 ppm internal
+
+
+
+
+
+
+
+
+# Add factor for ChatGPT mass accuracy external MS/MS (sub 5 ppm vs worse)
+instrument_metadata_all$chatGPT_ext_MSMS_factor <- ifelse(instrument_metadata_all$ChatGPT_mass_acc_ext_MSMS > 5, "Above 5 ppm", "Sub 5 ppm")
+
+# Categorizing based on the 1 and 2 ppm thresholds
+instrument_metadata_all$chatGPT_int_MSMS_factor <- ifelse(
+    instrument_metadata_all$ChatGPT_mass_acc_int_MSMS <= 1, 
+    "Sub 1 ppm",
+    ifelse(
+        instrument_metadata_all$ChatGPT_mass_acc_int_MSMS <= 2, 
+        "1-2 ppm",
+        "Above 2 ppm"
+    )
+)
+
+# Convert to a factor for use in analysis
+instrument_metadata_all$chatGPT_int_MSMS_factor <- as.factor(instrument_metadata_all$chatGPT_int_MSMS_factor)
+
+instrument_metadata_all[,13:15]
+
+
+
+
+
+
+
+
+############ EXTERNAL MSMS ######################
+# Step 1: Create a logical vector for instruments released before 2011 and after
+instruments_extMSMS_cal_over5 <- instrument_metadata_all$Instrument_Name[instrument_metadata_all$chatGPT_ext_MSMS_factor == "Above 5 ppm"] %>% na.omit()
+instruments_extMSMS_cal_under5 <- instrument_metadata_all$Instrument_Name[instrument_metadata_all$chatGPT_ext_MSMS_factor == "Sub 5 ppm"] %>% na.omit()
+
+# Step 2: Sum counts by row for the matched columns
+contingency_counts_by_factors$instruments_extMSMS_cal_over5 <- rowSums(contingency_counts[, instruments_extMSMS_cal_over5], na.rm = TRUE)
+contingency_counts_by_factors$instruments_extMSMS_cal_under5 <- rowSums(contingency_counts[, instruments_extMSMS_cal_under5], na.rm = TRUE)
+
+
+######### internal MSMS cal #########
+
+# Step 1: Create a logical vector for instruments released before 2011 and after
+instruments_int_SMMS_cal_over2 <- instrument_metadata_all$Instrument_Name[instrument_metadata_all$chatGPT_int_MSMS_factor == "Above 2 ppm"] %>% na.omit()
+
+
+instruments_int_MSMS_cal_btwn1and2 <- instrument_metadata_all$Instrument_Name[instrument_metadata_all$chatGPT_int_MSMS_factor == "1-2 ppm"] 
+
+instruments_int_MSMS_cal_btwn1and2 <- as.character(na.omit(instruments_int_MSMS_cal_btwn1and2))
+instruments_int_MSMS_cal_under1 <- instrument_metadata_all$Instrument_Name[instrument_metadata_all$chatGPT_int_MSMS_factor == "Sub 1 ppm"] %>% na.omit() %>% as.character()
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+```{r}
+
+table(instrument_metadata_all$ChatGPT_mass_acc_int_MSMS)
+# here we could have 3 splits: sub 1 ppm; sub 2 ppm - this would have to include sub 1 ppm or not? 
+# and > 2 ppm? 
+
+
+# Step 2: Sum counts by row for the matched columns
+contingency_counts_by_factors$instruments_int_SMMS_cal_over2 <- rowSums(contingency_counts[, instruments_int_SMMS_cal_over2], na.rm = TRUE)
+contingency_counts_by_factors$instruments_int_MSMS_cal_btwn1and2 <- rowSums(contingency_counts[, instruments_int_MSMS_cal_btwn1and2], na.rm = TRUE)
+contingency_counts_by_factors$instruments_int_MSMS_cal_under1 <- rowSums(contingency_counts[, instruments_int_MSMS_cal_under1], na.rm = TRUE)
+
+
+
+
+expected_count_proportions_by_instrument_by_factors <- contingency_counts_by_factors[7,]/sum(contingency_counts_by_factors[7,])
+
+
+
+```
+
 
 ```{r creating_instrumnt_annottion_by_peptidoform_function}
 # # this has worked

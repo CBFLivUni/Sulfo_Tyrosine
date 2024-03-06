@@ -113,7 +113,8 @@ for peptidoform_id in filtered_data['peptidoform_id']:
 # Step 2: AUC calculation and visualisation of model histograms
 # Store AUC percentages and set threshold
 peptidoform_aucs = {}
-auc_percent_threshold = 15
+# auc_percent_threshold = 15
+auc_percent_thresholds = [20, 25, 30, 45, 50]
 
 # Color Universal Design (CUD) color palette
 colors = ['#0072B2',  # Blue
@@ -155,89 +156,93 @@ pdf_pages_all_bins = {
 
 # Iterate through all the bins and apply AUC filtering
 for bin_range in all_bins:
-    filtered_peptidoform_ids = set()  # Using a set to avoid duplicate peptidoform IDs
-    auc_percentages_bin = []  # Store AUC percentages for this bin
+    for auc_percent_threshold in auc_percent_thresholds:
+        filtered_peptidoform_ids = set()  # Using a set to avoid duplicate peptidoform IDs
+        auc_percentages_bin = []  # Store AUC percentages for this bin
 
 
     # Iterate through the best models and apply AUC filtering based on the current bin
-    for peptidoform_id, model_data in best_models.items():
-        model = model_data['model']
-        errors_list = filtered_data[filtered_data['peptidoform_id'] == peptidoform_id]['calibrated_error'].values[0]
-        errors_reformatted = np.array(errors_list, dtype=float).reshape(-1, 1)
+        for peptidoform_id, model_data in best_models.items():
+            model = model_data['model']
+            errors_list = filtered_data[filtered_data['peptidoform_id'] == peptidoform_id]['calibrated_error'].values[0]
+            errors_reformatted = np.array(errors_list, dtype=float).reshape(-1, 1)
 
         # Calculate the AUC over the current bin for each component of the best model
-        component_aucs = [gaussian_auc_for_bin(mean[0], covar[0][0], weight, bin_range)
-                          for mean, covar, weight in zip(model.means_, model.covariances_, model.weights_)]
+            component_aucs = [gaussian_auc_for_bin(mean[0], covar[0][0], weight, bin_range)
+                              for mean, covar, weight in zip(model.means_, model.covariances_, model.weights_)]
 
-        # Calculate AUC as a percentage for each component and check if any meets the threshold
-        component_aucs_percentage = [(auc / sum(model.weights_)) * 100 for auc in component_aucs]
-        auc_meets_threshold = any(auc_percentage >= auc_percent_threshold for auc_percentage in component_aucs_percentage)
+            # Calculate AUC as a percentage for each component and check if any meets the threshold
+            component_aucs_percentage = [(auc / sum(model.weights_)) * 100 for auc in component_aucs]
+            auc_meets_threshold = any(auc_percentage >= auc_percent_threshold for auc_percentage in component_aucs_percentage)
 
-        # Check if the AUC meets the threshold
-        if auc_meets_threshold:
-            filtered_peptidoform_ids.add(peptidoform_id) # if so add the peptidoform to our filtered data
+            # Check if the AUC meets the threshold
+            if auc_meets_threshold:
+                filtered_peptidoform_ids.add(peptidoform_id) # if so add the peptidoform to our filtered data
 
-            # Start a new figure for each peptidoform
-            plt.figure(figsize=(10, 6))
+                # Start a new figure for each peptidoform
+                plt.figure(figsize=(10, 6))
 
-            # Plot the histogram of the data
-            n, bins, patches = plt.hist(errors_reformatted, bins=30, density=True, alpha=0.6, color='g')
+                # Plot the histogram of the data
+                n, bins, patches = plt.hist(errors_reformatted, bins=30, density=True, alpha=0.6, color='g')
 
-            # Plot each Gaussian component, its median line, and text for the median
-            for i in range(model.n_components):
-                mean = model.means_[i][0]
-                var = model.covariances_[i][0]
-                weight = model.weights_[i]
-                x = np.linspace(min(errors_reformatted), max(errors_reformatted), 1000)
-                gauss = weight * norm.pdf(x, mean, np.sqrt(var))
-                current_color = colors[i % len(colors)]  # Use modulo to cycle through colors
-                plt.plot(x, gauss, linewidth=2, color=current_color)
+                # Plot each Gaussian component, its median line, and text for the median
+                for i in range(model.n_components):
+                    mean = model.means_[i][0]
+                    var = model.covariances_[i][0]
+                    weight = model.weights_[i]
+                    x = np.linspace(min(errors_reformatted), max(errors_reformatted), 1000)
+                    gauss = weight * norm.pdf(x, mean, np.sqrt(var))
+                    current_color = colors[i % len(colors)]  # Use modulo to cycle through colors
+                    plt.plot(x, gauss, linewidth=2, color=current_color)
 
-                # Add a dashed line at the median (mean for Gaussian), using the same color
-                plt.axvline(x=mean, color=current_color, linestyle='--')
+                    # Add a dashed line at the median (mean for Gaussian), using the same color
+                    plt.axvline(x=mean, color=current_color, linestyle='--')
 
-                # Add median text annotation
-                plt.text(mean + plt.xlim()[1] / 15, plt.ylim()[1] * 0.9, f'{mean:.4f}', color=current_color,
-                         horizontalalignment='center')
+                    # Add median text annotation
+                    plt.text(mean + plt.xlim()[1] / 15, plt.ylim()[1] * 0.9, f'{mean:.4f}', color=current_color,
+                             horizontalalignment='center')
 
-            # add title and AUC to the figure
-            plt.title(f'Best Fit for Peptidoform ID: {peptidoform_id} in Bin {bin_range}')
+                # add title and AUC to the figure
+                plt.title(f'Best Fit for Peptidoform ID: {peptidoform_id} in Bin {bin_range}')
             # round AUCs first
-            auc_percentages_to_plot = [round((auc / sum(model.weights_)) * 100, 2) for auc in component_aucs]
-            plt.text(0.05, 0.95, f'AUCs: {auc_percentages_to_plot}%', transform=plt.gca().transAxes, fontsize=10,
-                     verticalalignment='top')
+                auc_percentages_to_plot = [round((auc / sum(model.weights_)) * 100, 2) for auc in component_aucs]
+                plt.text(0.05, 0.95, f'AUCs: {auc_percentages_to_plot}%', transform=plt.gca().transAxes, fontsize=10,
+                         verticalalignment='top')
 
-            # Save the current figure to the PDF for the current bin
-            pdf_pages_all_bins[bin_range].savefig()
-            # pdf_pages_all.savefig()  # Save each histogram to the all-inclusive PDF, not in this run
-            plt.close()
+                # Save the current figure to the PDF for the current bin
+                pdf_pages_all_bins[bin_range].savefig()
+                # pdf_pages_all.savefig()  # Save each histogram to the all-inclusive PDF, not in this run
+                plt.close()
 
     # Print the number of peptidoforms with AUC >= auc_percent_threshold for the current bin
-    num_filtered_peptidoforms_bin = len(filtered_peptidoform_ids)
-    logging.info(f"Number of peptidoforms in bin {bin_range} with AUC >= {auc_percent_threshold}%: {num_filtered_peptidoforms_bin}")
+        num_filtered_peptidoforms_bin = len(filtered_peptidoform_ids)
+        logging.info(f"Number of peptidoforms in bin {bin_range} with AUC >= {auc_percent_threshold}%: {num_filtered_peptidoforms_bin}")
 
-    # Plot AUC percentages distribution for the current bin
-    plt.figure(figsize=(10, 6))
-    sns.histplot(auc_percentages_bin, kde=True, color='skyblue', bins=30)
-    plt.title(f'Distribution of AUC Percentages for Bin {bin_range}')
-    plt.xlabel('AUC Percentage')
-    plt.ylabel('Frequency')
-    plt.savefig(f'../output/auc_percentages_distribution_bin_{bin_range[0]}_{bin_range[1]}.png')
-    plt.close()  # Close the plot to avoid memory issues
+        # Plot AUC percentages distribution for the current bin
+        plt.figure(figsize=(10, 6))
+        sns.histplot(auc_percentages_bin, kde=True, color='skyblue', bins=30)
+        plt.title(f'Distribution of AUC Percentages for Bin {bin_range}')
+        plt.xlabel('AUC Percentage')
+        plt.ylabel('Frequency')
+        plt.savefig(f'../output/auc_percentages_distribution_bin_{bin_range[0]}_{bin_range[1]}.png')
+        plt.close()  # Close the plot to avoid memory issues
 
 
-    # Filter the 'filtered_data' DataFrame to include only rows with peptidoform IDs in 'sulfo_filtered_peptidoform_ids'
-    df_tosave = filtered_data[filtered_data['peptidoform_id'].isin(filtered_peptidoform_ids)]
+        # Filter the 'filtered_data' DataFrame to include only rows with peptidoform IDs in 'sulfo_filtered_peptidoform_ids'
+        df_tosave = filtered_data[filtered_data['peptidoform_id'].isin(filtered_peptidoform_ids)]
 
-    # Check if the resulting subset is empty
-    if not df_tosave.empty:
-        # If not empty, proceed to save the subset to a CSV file
-        output_file = f'../output/postGMM_fitting_binrange_{bin_range[0]}_{bin_range[1]}.csv'
-        df_tosave.to_csv(output_file, index=False)
-        logging.info(f"Written data for bin {bin_range} to {output_file}")
-    else:
-        # If the subset is empty, print a message indicating no data was saved for this bin
-        logging.info(f"No data matched criteria for bin {bin_range}. No file written.")
+        # Check if the resulting subset is empty
+        if len(filtered_peptidoform_ids) > 0:
+            # Filter the 'filtered_data' DataFrame
+            df_tosave = filtered_data[filtered_data['peptidoform_id'].isin(filtered_peptidoform_ids)]
+
+            # Save the filtered data to a CSV file
+            output_file = f'../output/postGMM_fitting_threshold_{auc_percent_threshold}_binrange_{bin_range[0]}_{bin_range[1]}.csv'
+            df_tosave.to_csv(output_file, index=False)
+            logging.info(f"Data for bin {bin_range} with AUC >= {auc_percent_threshold}% written to {output_file}")
+        else:
+            # If the subset is empty, print a message indicating no data was saved for this bin
+            logging.info(f"No data matched criteria for bin {bin_range} at AUC threshold of {auc_percent_threshold}%. No file written.")
 
 # Close all PDFs
 for pdf in pdf_pages_all_bins.values():

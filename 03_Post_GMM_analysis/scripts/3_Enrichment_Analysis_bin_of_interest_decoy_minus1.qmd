@@ -230,7 +230,6 @@ names(postGMM_data) <- cleaned_names
 
 ```
 
-
 ## Data Cleaning for enrichment analysis using cluster profiler
 
 ```{r data_preclean}
@@ -481,8 +480,9 @@ cluster_GO_MF <- enrichGO(gene      = foreground_genes,
                        ont          = "MF",  # For Biological Process; can use "MF" for Molecular Function or "CC" for Cellular Component
                        pAdjustMethod = "BH", # Benjamini-Hochberg
                        pvalueCutoff = 1,
-                       qvalueCutoff = 0.18)
+                       qvalueCutoff = 0.1)
 # 
+dotplot(cluster_GO_MF)
 
 
 ########### now for molecular function
@@ -497,14 +497,16 @@ goplot(cluster_GO_MF)
 barplot(cluster_GO_MF)
 
 
-cluster_GO_CC <- enrichGO(gene         = foreground_genes,
+cluster_GO_CC <- enrichGO(gene      = foreground_genes,
                        universe     = background_genes,
                        OrgDb        = org.Hs.eg.db,  # human annotation
                        keyType      = "ENSEMBL", #just to make sure
                        ont          = "CC",  # For Biological Process; can use "MF" for Molecular Function or "CC" for Cellular Component
                        pAdjustMethod = "BH", # Benjamini-Hochberg
                        pvalueCutoff = 1,
-                       qvalueCutoff = 0.202)
+                       qvalueCutoff = 0.1)
+
+dotplot(cluster_GO_CC)
 
 GO_term_dataframe_CC <- as.data.frame(cluster_GO_CC)
 max(GO_term_dataframe_CC$qvalue)
@@ -514,14 +516,16 @@ goplot(cluster_GO_CC)
 barplot(cluster_GO_CC)
 
 ######### now for biological processes 
-cluster_GO_BP <- enrichGO(gene         = foreground_genes,
+cluster_GO_BP <- enrichGO(gene      = foreground_genes,
                        universe     = background_genes,
                        OrgDb        = org.Hs.eg.db,  # human annotation
                        keyType      = "ENSEMBL", #just to make sure
                        ont          = "BP",  # For Biological Process; can use "MF" for Molecular Function or "CC" for Cellular Component
                        pAdjustMethod = "BH", # Benjamini-Hochberg
                        pvalueCutoff = 1,
-                       qvalueCutoff =  0.252)
+                       qvalueCutoff =  0.1)
+
+dotplot(cluster_GO_BP)
 
 GO_term_dataframe_BP <- as.data.frame(cluster_GO_BP)
 max(GO_term_dataframe_BP$qvalue)

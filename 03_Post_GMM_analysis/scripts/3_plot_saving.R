@@ -1,10 +1,11 @@
 # Start PDF device
-pdf("../out/EnrichmentPlots_binofinterest_abithacky.pdf", width=8.27, height=11.69)
+pdf("../out/EnrichmentPlots_binofinterest_q_0_1.pdf", width=8.27, height=11.69)
 
 # "Title PAGE"
 plot(1, type="n", xlab="", ylab="", xlim=c(0, 1), ylim=c(0, 1))
 text(0.5, 0.5, "GO Molecular Function, Bin of Interest", cex = 2.5) 
 
+dotplot(cluster_GO_MF)
 goplot(cluster_GO_MF)  
 barplot(cluster_GO_MF, showCategory = 30)
 treeplot(cluster_GO_tree_MF)
@@ -12,6 +13,8 @@ treeplot(cluster_GO_tree_MF)
 # "Title PAGE"
 plot(1, type="n", xlab="", ylab="", xlim=c(0, 1), ylim=c(0, 1))
 text(0.5, 0.5, "GO Biological Process, Bin of Interest", cex = 2.5) 
+
+dotplot(cluster_GO_BP)
 goplot(cluster_GO_BP)  
 barplot(cluster_GO_BP, showCategory = 30)
 treeplot(cluster_GO_tree_BP)

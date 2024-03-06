@@ -230,7 +230,6 @@ names(postGMM_data) <- cleaned_names
 
 ```
 
-
 ## Data Cleaning for enrichment analysis using cluster profiler
 
 ```{r data_preclean}
@@ -481,10 +480,10 @@ cluster_GO_MF <- enrichGO(gene      = foreground_genes,
                        ont          = "MF",  # For Biological Process; can use "MF" for Molecular Function or "CC" for Cellular Component
                        pAdjustMethod = "BH", # Benjamini-Hochberg
                        pvalueCutoff = 1,
-                       qvalueCutoff = 0.375)
+                       qvalueCutoff = 0.1)
 # 
 
-
+dotplot(cluster_GO_MF)
 ########### now for molecular function
 GO_term_dataframe_MF <- as.data.frame(cluster_GO_MF)
 max(GO_term_dataframe_MF$qvalue)
@@ -504,7 +503,9 @@ cluster_GO_CC <- enrichGO(gene         = foreground_genes,
                        ont          = "CC",  # For Biological Process; can use "MF" for Molecular Function or "CC" for Cellular Component
                        pAdjustMethod = "BH", # Benjamini-Hochberg
                        pvalueCutoff = 1,
-                       qvalueCutoff = 0.378)
+                       qvalueCutoff = 0.1)
+
+
 
 GO_term_dataframe_CC <- as.data.frame(cluster_GO_CC)
 max(GO_term_dataframe_CC$qvalue)
@@ -521,7 +522,9 @@ cluster_GO_BP <- enrichGO(gene         = foreground_genes,
                        ont          = "BP",  # For Biological Process; can use "MF" for Molecular Function or "CC" for Cellular Component
                        pAdjustMethod = "BH", # Benjamini-Hochberg
                        pvalueCutoff = 1,
-                       qvalueCutoff =  0.202)
+                       qvalueCutoff =  0.1)
+
+goplot(cluster_GO_BP)
 
 GO_term_dataframe_BP <- as.data.frame(cluster_GO_BP)
 max(GO_term_dataframe_BP$qvalue)

@@ -482,7 +482,7 @@ cluster_GO_MF <- enrichGO(gene      = foreground_genes,
                        ont          = "MF",  # For Biological Process; can use "MF" for Molecular Function or "CC" for Cellular Component
                        pAdjustMethod = "BH", # Benjamini-Hochberg
                        pvalueCutoff = 1,
-                       qvalueCutoff = 0.3504)
+                       qvalueCutoff = 0.1) # some leeway but not too much
 # 
 
 
@@ -498,14 +498,14 @@ goplot(cluster_GO_MF)
 barplot(cluster_GO_MF)
 
 
-cluster_GO_CC <- enrichGO(gene         = foreground_genes,
+cluster_GO_CC <- enrichGO(gene      = foreground_genes,
                        universe     = background_genes,
                        OrgDb        = org.Hs.eg.db,  # human annotation
                        keyType      = "ENSEMBL", #just to make sure
                        ont          = "CC",  # For Biological Process; can use "MF" for Molecular Function or "CC" for Cellular Component
                        pAdjustMethod = "BH", # Benjamini-Hochberg
                        pvalueCutoff = 1,
-                       qvalueCutoff = 0.42)
+                       qvalueCutoff = 0.1)
 
 GO_term_dataframe_CC <- as.data.frame(cluster_GO_CC)
 max(GO_term_dataframe_CC$qvalue)
@@ -522,7 +522,7 @@ cluster_GO_BP <- enrichGO(gene         = foreground_genes,
                        ont          = "BP",  # For Biological Process; can use "MF" for Molecular Function or "CC" for Cellular Component
                        pAdjustMethod = "BH", # Benjamini-Hochberg
                        pvalueCutoff = 1,
-                       qvalueCutoff = 0.324)
+                       qvalueCutoff = 0.1)
 
 GO_term_dataframe_BP <- as.data.frame(cluster_GO_BP)
 max(GO_term_dataframe_BP$qvalue)
@@ -656,7 +656,6 @@ head(reactome_ORA)
 
 ```
 
-
 ```{r GSEA_ranked_protein_list_custom_background}
 # we need to count how many times a gene id appears to rank the genes in the foreground
 
@@ -677,7 +676,6 @@ names(protein_counts_df) <- c("ProteinID", "Count")
 
 ranked_proteins_list <- protein_counts_df %>% arrange(desc(Count)) %>% pull(Count, ProteinID)
 ```
-
 
 ```{r protein_ID_cleaning_by_bin}
 #### DO NOT RUN THIS! THIS IS FOR THE WHOLE BIN NOT JUST PHOSPHOTYROSINE
