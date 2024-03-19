@@ -1,0 +1,1 @@
+this analysis focuses on the peptidoforms whose spectra are convincing and whose protien assignment is of a golgi, transmembrane, secreted, ok proteins with known sY.
