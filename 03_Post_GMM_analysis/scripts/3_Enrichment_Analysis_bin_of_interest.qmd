@@ -488,6 +488,11 @@ cluster_GO_MF <- enrichGO(gene      = foreground_genes,
 
 ########### now for molecular function
 GO_term_dataframe_MF <- as.data.frame(cluster_GO_MF)
+gene_ratio <- as.numeric(sapply(strsplit(GO_term_dataframe_MF$GeneRatio, "/"), function(x) as.numeric(x[1]) / as.numeric(x[2])))
+GO_term_dataframe_MF$GeneRatio <- gene_ratio
+
+
+
 max(GO_term_dataframe_MF$qvalue)
 GO_term_dataframe_MF <- GO_term_dataframe_MF[GO_term_dataframe_MF$pvalue < 0.05,]
 max(GO_term_dataframe_MF$qvalue)

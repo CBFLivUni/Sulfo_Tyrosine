@@ -1,18 +1,29 @@
 columns_to_plot <- names(results)[4:(ncol(results)-1)]
 
-# Start PDF device
-pdf("../out/BarPlots_byBin_30pc_individual.pdf", width = 11, height = 8.5)
+# start PDF device
+pdf("../out/BarPlots_byBin_30pc_individual_final_version_for_manuscript_nox.pdf", width = 11, height = 8.5)
 
-# Loop through each column to create and save the plot
+# loop through each column to create and save the plot
 for (col in columns_to_plot) {
   p <- ggplot(results, aes(x = reorder(bin_ID, lower_boundary), y = get(col))) +
     geom_bar(stat = "identity", aes(fill = highlight)) +
     scale_fill_manual(values = color_blind_friendly_colors) +
-    geom_text(aes(label = get(col), color = highlight), vjust = -0.5, size = 3, fontface = "bold") +
+    geom_text(aes(label = get(col), color = highlight), vjust = -0.5, size = 5, fontface = "bold") +
     scale_color_manual(values = color_blind_friendly_colors) +
     theme_minimal() +
     labs(x = "Bin ID", y = col, title = paste(col, "by Bin")) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    theme(
+      axis.text.x = element_blank(), 
+      # axis.ticks.x = element_line(size = 0.5), 
+      axis.ticks.x = element_blank(), 
+      plot.title = element_text(hjust = 0.5, size = 16), 
+      axis.title.x = element_text(size = 10), 
+      axis.title.y = element_blank(),  
+      axis.text.y = element_text(angle = 0, hjust = 1, size = 12),
+      axis.ticks.y = element_blank(),
+      axis.ticks.length = unit(0.5, "cm"),
+      legend.position = "none"
+      ) +
     guides(fill = guide_legend(title = "Category"), color = FALSE)
   
   print(p) # Print the plot to the PDF device
