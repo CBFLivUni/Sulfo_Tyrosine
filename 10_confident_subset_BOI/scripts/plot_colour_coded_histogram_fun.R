@@ -2,19 +2,32 @@ library(ggplot2)
 library(viridis)
 library(forcats)
 library(dplyr)
-
+library(RColorBrewer)
+library(pals)
+library(Polychrome)
 
 
 
 
 # create colour palette for all instruments
-instruments <- unique(datasets_metadata$instrument)
+instruments <- unique(datasets_metadata$instrument) %>% sort()
 
 # number of unique instruments
 num_instruments <- length(instruments)
 
-# create a colorblind-friendly palette
-color_palette <- viridis::viridis(n = num_instruments, option = "D")
+
+# create your own color palette (16 colors) based on `seedcolors`
+color_palette <- createPalette(num_instruments,  c("#ff0000", "#00ff00", "#0000ff"))
+swatch(color_palette)
+
+
+
+# # create a colorblind-friendly palette
+# color_palette <- RColorBrewer::RColorBrewer(n = num_instruments, option = "D")
+
+barplot(rep(1, num_instruments), col = color_palette, border = "NA", 
+        main = "Color Palette Visualization", 
+        axes = FALSE)
 # color_palette <- c("dodgerblue2", "#E31A1C", "green4", "#6A3D9A", "#FF7F00",
 #                    "black", "gold1", "skyblue2", "palegreen2", "#FDBF6F", "gray70",
 #                    "maroon", "orchid1", "darkturquoise", "darkorange4", "brown")[1:num_instruments]
@@ -23,7 +36,7 @@ color_palette <- viridis::viridis(n = num_instruments, option = "D")
 instrument_colors <- setNames(color_palette, instruments)
 
 
-# pick palette by actually visualising - in future may be worth
+# pick palette by actually visualising 
 plot(1, type="n", xlab="", ylab="", xlim=c(0, 1), ylim=c(0, length(instruments)), axes=FALSE)
 
 # add a rectangle for each color, along with the instrument name as text
@@ -39,7 +52,8 @@ plot_colour_coded_histogram <- function(absolute_file_path,
                                         column_to_colour_by,
                                         mz_binwidth = 0.02,
                                         layout = "facet",
-                                        metadata_by_dataset = datasets_metadata ) {# set as default as i wont rly customise
+                                        metadata_by_dataset = datasets_metadata,
+                                        totals_only = FALSE) {# set as default as i wont rly customise
   
   # first, we read in the .csv file for a peptidoform
   temp_data <- read.csv(absolute_file_path)
@@ -108,7 +122,19 @@ plot_colour_coded_histogram <- function(absolute_file_path,
       }
     }
   }
-  # 
+  
+  
+  # precalculate the number of PSMs by instrument here and sdave for future use
+  total_counts_by_instrument <- as.data.frame(table(temp_data$instrument))
+  names(total_counts_by_instrument) <- c("instrument", temp_data$peptidoform_id[1])
+  write.csv(total_counts_by_instrument, 
+            file = paste0("../out/total_counts_by_instrument_for_",temp_data$peptidoform_id[1], ".csv"),
+            row.names =  FALSE)
+  
+  if (totals_only) {
+    warning("csv written, but no plots generated.")
+    return()
+  }
   # for(i in 1:nrow(temp_data)) {
   #   # extract the current row's dataset_ID and experiment_tag
   #   current_dataset_ID <- temp_data$dataset_ID[i]

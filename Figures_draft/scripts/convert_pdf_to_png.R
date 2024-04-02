@@ -1,7 +1,7 @@
 library(pdftools)
 
 
-pdf_convert("../in/BarPlots_byBin_30pc_individual_final_version_for_manuscript_withx.pdf", format = "png", pages = c(11:13), filenames = NULL, dpi = 600, opw = "", upw = "", verbose = TRUE)
+pdf_convert("../in/BarPlots_byBin_15pc_summed_final_version_for_manuscript_BLANK_LABELS.pdf", format = "png", pages = NULL, filenames = NULL, dpi = 600, opw = "", upw = "", verbose = TRUE)
 
 
 

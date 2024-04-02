@@ -72,7 +72,7 @@ n_components_range = range(1, 4)
 # multiple components are selected based on BIC alone where eyeballing the histogram
 # would have resulted in a lower number of components. Therefore, we prioritise a low score
 # only if it's 'significantly' lower than the score of the smallest number of components with the best socre.
-# rule of thumb - 10 points lower score is significant, but also test by plotting AUC
+# rule of thumb - 10 points lower score is significant, but we also test by plotting AUC later
 
 # initiate empty dictionary to store best models
 best_models = {}
@@ -198,7 +198,7 @@ for bin_range in all_bins:
                     # Add a dashed line at the median (mean for Gaussian), using the same color
                     plt.axvline(x=mean, color=current_color, linestyle='--')
 
-                    # Add median text annotation
+                    # Add mean text annotation
                     plt.text(mean + plt.xlim()[1] / 15, plt.ylim()[1] * 0.9, f'{mean:.4f}', color=current_color,
                              horizontalalignment='center')
 
@@ -225,7 +225,7 @@ for bin_range in all_bins:
         plt.xlabel('AUC Percentage')
         plt.ylabel('Frequency')
         plt.savefig(f'../output/auc_percentages_distribution_bin_{bin_range[0]}_{bin_range[1]}.png')
-        plt.close()  # Close the plot to avoid memory issues
+        plt.close()
 
 
         # Filter the 'filtered_data' DataFrame to include only rows with peptidoform IDs in 'sulfo_filtered_peptidoform_ids'
