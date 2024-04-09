@@ -1,5 +1,5 @@
 library(tidyverse)
-
+source(file = "generate_USI_fun.R")
 setwd("C:/Users/jtzve/Desktop/Sufo_Tyrosine/09_USI_generation/scripts")
 data_dir <- "C:/Users/jtzve/Desktop/Sufo_Tyrosine/06_histograms_of_peptidoforms_of_interest_per_dataset/out/csv_tables_by_peptidoform/"
 
@@ -28,6 +28,8 @@ for (i in (1: length(files_of_interst))) {
   
 }
 
+test <- files_list[[1]]
+
 
 files_with_USIs_list <- list()
 
@@ -36,6 +38,58 @@ for (i in (1: length(files_of_interst))) {
   files_with_USIs_list[[i]] <- generate_USI(files_list[[i]])
   
 }
+
+all_data <- files_with_USIs_list[[1]]
+
+for (i in (2: length(files_of_interst))) {
+  
+  all_data <- rbind(all_data,files_with_USIs_list[[i]] )
+  
+}
+
+# add clumns that we will need
+
+all_data$protein_ID <- ""
+all_data$protein_name <- ""
+all_data$known_sulfated <- ""
+
+
+
+all_colnames <- colnames(all_data)
+collnames_to_add_to_end <- all_colnames[1:24]
+
+all_data_reorganised <- all_data[, c("peptidoform_id",
+                                     "known_sulfated",
+                                    
+                                     "USI_workaround", 
+                                     "USI_with_one_sulfo", 
+                                     "USI_with_two_sulfo",
+                                     "calibrated_error",
+                                     
+                                     "protein_ID",
+                                     "protein_name",
+                                     "dataset_ID",
+                                     collnames_to_add_to_end)]
+
+
+
+# populate protein ID and protein name based on matching peptidoform ID:
+# if all_data_reorganised$peptidoform_id matches  metadata$peptidoform_id,
+# 
+# populate all_data_reorganised$protein_ID with values from the same row for metadata$cleaned_protein_IDs
+# and populate all_data_reorganised$protein_name with values from the same row for metadata$Protein.names
+# 
+all_data_reorganised <- all_data_reorganised %>%
+  left_join(metadata %>% 
+              select(peptidoform_id, cleaned_protein_IDs, Protein.names), 
+            by = "peptidoform_id") %>%
+  mutate(protein_ID = cleaned_protein_IDs,
+         protein_name = Protein.names) %>%
+  select(-cleaned_protein_IDs, -Protein.names)
+
+
+
+write.csv(all_data_reorganised, file = "../out/USIs_to_share_v3.csv", row.names = FALSE)
 
 # use each row as a current data frame to feed into generate USI
 new_USIs <- generate_USI(test)
