@@ -1,0 +1,153 @@
+2024-02-28 20:59:05,850:INFO:No data matched criteria for bin (-0.0275, -0.0225) at AUC threshold of 20%. No file written.
+2024-02-28 20:59:05,853:INFO:No data matched criteria for bin (-0.0275, -0.0225) at AUC threshold of 25%. No file written.
+2024-02-28 20:59:05,855:INFO:No data matched criteria for bin (-0.0275, -0.0225) at AUC threshold of 30%. No file written.
+2024-02-28 20:59:05,858:INFO:No data matched criteria for bin (-0.0275, -0.0225) at AUC threshold of 45%. No file written.
+2024-02-28 20:59:05,861:INFO:No data matched criteria for bin (-0.0275, -0.0225) at AUC threshold of 50%. No file written.
+2024-02-28 20:59:05,864:INFO:No data matched criteria for bin (-0.0225, -0.0175) at AUC threshold of 20%. No file written.
+2024-02-28 20:59:05,866:INFO:No data matched criteria for bin (-0.0225, -0.0175) at AUC threshold of 25%. No file written.
+2024-02-28 20:59:05,868:INFO:No data matched criteria for bin (-0.0225, -0.0175) at AUC threshold of 30%. No file written.
+2024-02-28 20:59:05,871:INFO:No data matched criteria for bin (-0.0225, -0.0175) at AUC threshold of 45%. No file written.
+2024-02-28 20:59:05,873:INFO:No data matched criteria for bin (-0.0225, -0.0175) at AUC threshold of 50%. No file written.
+2024-02-28 20:59:05,875:INFO:No data matched criteria for bin (-0.0175, -0.0125) at AUC threshold of 20%. No file written.
+2024-02-28 20:59:05,878:INFO:No data matched criteria for bin (-0.0175, -0.0125) at AUC threshold of 25%. No file written.
+2024-02-28 20:59:05,879:INFO:No data matched criteria for bin (-0.0175, -0.0125) at AUC threshold of 30%. No file written.
+2024-02-28 20:59:05,880:INFO:No data matched criteria for bin (-0.0175, -0.0125) at AUC threshold of 45%. No file written.
+2024-02-28 20:59:05,881:INFO:No data matched criteria for bin (-0.0175, -0.0125) at AUC threshold of 50%. No file written.
+2024-02-28 20:59:05,882:INFO:No data matched criteria for bin (-0.0125, -0.0075) at AUC threshold of 20%. No file written.
+2024-02-28 20:59:05,883:INFO:No data matched criteria for bin (-0.0125, -0.0075) at AUC threshold of 25%. No file written.
+2024-02-28 20:59:05,884:INFO:No data matched criteria for bin (-0.0125, -0.0075) at AUC threshold of 30%. No file written.
+2024-02-28 20:59:05,885:INFO:No data matched criteria for bin (-0.0125, -0.0075) at AUC threshold of 45%. No file written.
+2024-02-28 20:59:05,887:INFO:No data matched criteria for bin (-0.0125, -0.0075) at AUC threshold of 50%. No file written.
+2024-02-28 20:59:05,891:INFO:Data for bin (-0.0075, -0.0025) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_-0.0075_-0.0025.csv
+2024-02-28 20:59:05,893:INFO:No data matched criteria for bin (-0.0075, -0.0025) at AUC threshold of 25%. No file written.
+2024-02-28 20:59:05,894:INFO:No data matched criteria for bin (-0.0075, -0.0025) at AUC threshold of 30%. No file written.
+2024-02-28 20:59:05,895:INFO:No data matched criteria for bin (-0.0075, -0.0025) at AUC threshold of 45%. No file written.
+2024-02-28 20:59:05,898:INFO:No data matched criteria for bin (-0.0075, -0.0025) at AUC threshold of 50%. No file written.
+2024-02-28 20:59:05,902:INFO:Data for bin (-0.0025, 0.0025) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_-0.0025_0.0025.csv
+2024-02-28 20:59:05,905:INFO:Data for bin (-0.0025, 0.0025) with AUC >= 25% written to ../output/postGMM_fitting_threshold_25_binrange_-0.0025_0.0025.csv
+2024-02-28 20:59:05,908:INFO:Data for bin (-0.0025, 0.0025) with AUC >= 30% written to ../output/postGMM_fitting_threshold_30_binrange_-0.0025_0.0025.csv
+2024-02-28 20:59:05,912:INFO:Data for bin (-0.0025, 0.0025) with AUC >= 45% written to ../output/postGMM_fitting_threshold_45_binrange_-0.0025_0.0025.csv
+2024-02-28 20:59:05,915:INFO:Data for bin (-0.0025, 0.0025) with AUC >= 50% written to ../output/postGMM_fitting_threshold_50_binrange_-0.0025_0.0025.csv
+2024-02-28 20:59:05,918:INFO:No data matched criteria for bin (0.0025, 0.0075) at AUC threshold of 20%. No file written.
+2024-02-28 20:59:05,921:INFO:No data matched criteria for bin (0.0025, 0.0075) at AUC threshold of 25%. No file written.
+2024-02-28 20:59:05,923:INFO:No data matched criteria for bin (0.0025, 0.0075) at AUC threshold of 30%. No file written.
+2024-02-28 20:59:05,926:INFO:No data matched criteria for bin (0.0025, 0.0075) at AUC threshold of 45%. No file written.
+2024-02-28 20:59:05,928:INFO:No data matched criteria for bin (0.0025, 0.0075) at AUC threshold of 50%. No file written.
+2024-02-28 20:59:05,931:INFO:No data matched criteria for bin (0.0075, 0.0125) at AUC threshold of 20%. No file written.
+2024-02-28 20:59:05,933:INFO:No data matched criteria for bin (0.0075, 0.0125) at AUC threshold of 25%. No file written.
+2024-02-28 20:59:05,935:INFO:No data matched criteria for bin (0.0075, 0.0125) at AUC threshold of 30%. No file written.
+2024-02-28 20:59:05,938:INFO:No data matched criteria for bin (0.0075, 0.0125) at AUC threshold of 45%. No file written.
+2024-02-28 20:59:05,940:INFO:No data matched criteria for bin (0.0075, 0.0125) at AUC threshold of 50%. No file written.
+2024-02-28 20:59:05,943:INFO:No data matched criteria for bin (0.0125, 0.0175) at AUC threshold of 20%. No file written.
+2024-02-28 20:59:05,944:INFO:No data matched criteria for bin (0.0125, 0.0175) at AUC threshold of 25%. No file written.
+2024-02-28 20:59:05,945:INFO:No data matched criteria for bin (0.0125, 0.0175) at AUC threshold of 30%. No file written.
+2024-02-28 20:59:05,946:INFO:No data matched criteria for bin (0.0125, 0.0175) at AUC threshold of 45%. No file written.
+2024-02-28 20:59:05,947:INFO:No data matched criteria for bin (0.0125, 0.0175) at AUC threshold of 50%. No file written.
+2024-02-28 20:59:05,948:INFO:No data matched criteria for bin (0.0175, 0.0225) at AUC threshold of 20%. No file written.
+2024-02-28 20:59:05,949:INFO:No data matched criteria for bin (0.0175, 0.0225) at AUC threshold of 25%. No file written.
+2024-02-28 20:59:05,950:INFO:No data matched criteria for bin (0.0175, 0.0225) at AUC threshold of 30%. No file written.
+2024-02-28 20:59:05,951:INFO:No data matched criteria for bin (0.0175, 0.0225) at AUC threshold of 45%. No file written.
+2024-02-28 20:59:05,953:INFO:No data matched criteria for bin (0.0175, 0.0225) at AUC threshold of 50%. No file written.
+2024-02-28 20:59:05,953:INFO:CSV files have been saved in output folder.
+2024-02-28 21:00:14,967:INFO:No data matched criteria for bin (-0.0275, -0.0225) at AUC threshold of 20%. No file written.
+2024-02-28 21:00:15,012:INFO:No data matched criteria for bin (-0.0275, -0.0225) at AUC threshold of 25%. No file written.
+2024-02-28 21:00:15,053:INFO:No data matched criteria for bin (-0.0275, -0.0225) at AUC threshold of 30%. No file written.
+2024-02-28 21:00:15,096:INFO:No data matched criteria for bin (-0.0275, -0.0225) at AUC threshold of 45%. No file written.
+2024-02-28 21:00:15,146:INFO:No data matched criteria for bin (-0.0275, -0.0225) at AUC threshold of 50%. No file written.
+2024-02-28 21:00:15,191:INFO:No data matched criteria for bin (-0.0225, -0.0175) at AUC threshold of 20%. No file written.
+2024-02-28 21:00:15,240:INFO:No data matched criteria for bin (-0.0225, -0.0175) at AUC threshold of 25%. No file written.
+2024-02-28 21:00:15,295:INFO:No data matched criteria for bin (-0.0225, -0.0175) at AUC threshold of 30%. No file written.
+2024-02-28 21:00:15,341:INFO:No data matched criteria for bin (-0.0225, -0.0175) at AUC threshold of 45%. No file written.
+2024-02-28 21:00:15,385:INFO:No data matched criteria for bin (-0.0225, -0.0175) at AUC threshold of 50%. No file written.
+2024-02-28 21:00:15,432:INFO:No data matched criteria for bin (-0.0175, -0.0125) at AUC threshold of 20%. No file written.
+2024-02-28 21:00:15,481:INFO:No data matched criteria for bin (-0.0175, -0.0125) at AUC threshold of 25%. No file written.
+2024-02-28 21:00:15,534:INFO:No data matched criteria for bin (-0.0175, -0.0125) at AUC threshold of 30%. No file written.
+2024-02-28 21:00:15,578:INFO:No data matched criteria for bin (-0.0175, -0.0125) at AUC threshold of 45%. No file written.
+2024-02-28 21:00:15,623:INFO:No data matched criteria for bin (-0.0175, -0.0125) at AUC threshold of 50%. No file written.
+2024-02-28 21:00:15,666:INFO:No data matched criteria for bin (-0.0125, -0.0075) at AUC threshold of 20%. No file written.
+2024-02-28 21:00:15,710:INFO:No data matched criteria for bin (-0.0125, -0.0075) at AUC threshold of 25%. No file written.
+2024-02-28 21:00:15,759:INFO:No data matched criteria for bin (-0.0125, -0.0075) at AUC threshold of 30%. No file written.
+2024-02-28 21:00:15,807:INFO:No data matched criteria for bin (-0.0125, -0.0075) at AUC threshold of 45%. No file written.
+2024-02-28 21:00:15,856:INFO:No data matched criteria for bin (-0.0125, -0.0075) at AUC threshold of 50%. No file written.
+2024-02-28 21:00:15,909:INFO:Data for bin (-0.0075, -0.0025) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_-0.0075_-0.0025.csv
+2024-02-28 21:00:15,962:INFO:Data for bin (-0.0075, -0.0025) with AUC >= 25% written to ../output/postGMM_fitting_threshold_25_binrange_-0.0075_-0.0025.csv
+2024-02-28 21:00:16,020:INFO:Data for bin (-0.0075, -0.0025) with AUC >= 30% written to ../output/postGMM_fitting_threshold_30_binrange_-0.0075_-0.0025.csv
+2024-02-28 21:00:16,070:INFO:No data matched criteria for bin (-0.0075, -0.0025) at AUC threshold of 45%. No file written.
+2024-02-28 21:00:16,118:INFO:No data matched criteria for bin (-0.0075, -0.0025) at AUC threshold of 50%. No file written.
+2024-02-28 21:00:16,173:INFO:Data for bin (-0.0025, 0.0025) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_-0.0025_0.0025.csv
+2024-02-28 21:00:16,228:INFO:Data for bin (-0.0025, 0.0025) with AUC >= 25% written to ../output/postGMM_fitting_threshold_25_binrange_-0.0025_0.0025.csv
+2024-02-28 21:00:16,288:INFO:Data for bin (-0.0025, 0.0025) with AUC >= 30% written to ../output/postGMM_fitting_threshold_30_binrange_-0.0025_0.0025.csv
+2024-02-28 21:00:16,345:INFO:Data for bin (-0.0025, 0.0025) with AUC >= 45% written to ../output/postGMM_fitting_threshold_45_binrange_-0.0025_0.0025.csv
+2024-02-28 21:00:16,405:INFO:Data for bin (-0.0025, 0.0025) with AUC >= 50% written to ../output/postGMM_fitting_threshold_50_binrange_-0.0025_0.0025.csv
+2024-02-28 21:00:16,462:INFO:Data for bin (0.0025, 0.0075) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_0.0025_0.0075.csv
+2024-02-28 21:00:16,516:INFO:Data for bin (0.0025, 0.0075) with AUC >= 25% written to ../output/postGMM_fitting_threshold_25_binrange_0.0025_0.0075.csv
+2024-02-28 21:00:16,571:INFO:Data for bin (0.0025, 0.0075) with AUC >= 30% written to ../output/postGMM_fitting_threshold_30_binrange_0.0025_0.0075.csv
+2024-02-28 21:00:16,622:INFO:No data matched criteria for bin (0.0025, 0.0075) at AUC threshold of 45%. No file written.
+2024-02-28 21:00:16,671:INFO:No data matched criteria for bin (0.0025, 0.0075) at AUC threshold of 50%. No file written.
+2024-02-28 21:00:16,719:INFO:Data for bin (0.0075, 0.0125) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_0.0075_0.0125.csv
+2024-02-28 21:00:16,769:INFO:No data matched criteria for bin (0.0075, 0.0125) at AUC threshold of 25%. No file written.
+2024-02-28 21:00:16,818:INFO:No data matched criteria for bin (0.0075, 0.0125) at AUC threshold of 30%. No file written.
+2024-02-28 21:00:16,864:INFO:No data matched criteria for bin (0.0075, 0.0125) at AUC threshold of 45%. No file written.
+2024-02-28 21:00:16,910:INFO:No data matched criteria for bin (0.0075, 0.0125) at AUC threshold of 50%. No file written.
+2024-02-28 21:00:16,965:INFO:No data matched criteria for bin (0.0125, 0.0175) at AUC threshold of 20%. No file written.
+2024-02-28 21:00:17,020:INFO:No data matched criteria for bin (0.0125, 0.0175) at AUC threshold of 25%. No file written.
+2024-02-28 21:00:17,087:INFO:No data matched criteria for bin (0.0125, 0.0175) at AUC threshold of 30%. No file written.
+2024-02-28 21:00:17,138:INFO:No data matched criteria for bin (0.0125, 0.0175) at AUC threshold of 45%. No file written.
+2024-02-28 21:00:17,187:INFO:No data matched criteria for bin (0.0125, 0.0175) at AUC threshold of 50%. No file written.
+2024-02-28 21:00:17,235:INFO:No data matched criteria for bin (0.0175, 0.0225) at AUC threshold of 20%. No file written.
+2024-02-28 21:00:17,296:INFO:No data matched criteria for bin (0.0175, 0.0225) at AUC threshold of 25%. No file written.
+2024-02-28 21:00:17,356:INFO:No data matched criteria for bin (0.0175, 0.0225) at AUC threshold of 30%. No file written.
+2024-02-28 21:00:17,401:INFO:No data matched criteria for bin (0.0175, 0.0225) at AUC threshold of 45%. No file written.
+2024-02-28 21:00:17,448:INFO:No data matched criteria for bin (0.0175, 0.0225) at AUC threshold of 50%. No file written.
+2024-02-28 21:00:17,448:INFO:CSV files have been saved in output folder.
+2024-02-28 21:44:23,803:INFO:Data for bin (-0.0275, -0.0225) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_-0.0275_-0.0225.csv
+2024-02-28 21:55:02,899:INFO:Data for bin (-0.0275, -0.0225) with AUC >= 25% written to ../output/postGMM_fitting_threshold_25_binrange_-0.0275_-0.0225.csv
+2024-02-28 22:05:56,792:INFO:Data for bin (-0.0275, -0.0225) with AUC >= 30% written to ../output/postGMM_fitting_threshold_30_binrange_-0.0275_-0.0225.csv
+2024-02-28 22:16:50,300:INFO:Data for bin (-0.0275, -0.0225) with AUC >= 45% written to ../output/postGMM_fitting_threshold_45_binrange_-0.0275_-0.0225.csv
+2024-02-28 22:27:35,336:INFO:Data for bin (-0.0275, -0.0225) with AUC >= 50% written to ../output/postGMM_fitting_threshold_50_binrange_-0.0275_-0.0225.csv
+2024-02-28 22:38:16,144:INFO:Data for bin (-0.0225, -0.0175) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_-0.0225_-0.0175.csv
+2024-02-28 22:48:56,167:INFO:Data for bin (-0.0225, -0.0175) with AUC >= 25% written to ../output/postGMM_fitting_threshold_25_binrange_-0.0225_-0.0175.csv
+2024-02-28 22:59:38,847:INFO:Data for bin (-0.0225, -0.0175) with AUC >= 30% written to ../output/postGMM_fitting_threshold_30_binrange_-0.0225_-0.0175.csv
+2024-02-28 23:10:28,641:INFO:Data for bin (-0.0225, -0.0175) with AUC >= 45% written to ../output/postGMM_fitting_threshold_45_binrange_-0.0225_-0.0175.csv
+2024-02-28 23:21:14,952:INFO:Data for bin (-0.0225, -0.0175) with AUC >= 50% written to ../output/postGMM_fitting_threshold_50_binrange_-0.0225_-0.0175.csv
+2024-02-28 23:32:25,910:INFO:Data for bin (-0.0175, -0.0125) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_-0.0175_-0.0125.csv
+2024-02-28 23:43:13,381:INFO:Data for bin (-0.0175, -0.0125) with AUC >= 25% written to ../output/postGMM_fitting_threshold_25_binrange_-0.0175_-0.0125.csv
+2024-02-28 23:54:02,508:INFO:Data for bin (-0.0175, -0.0125) with AUC >= 30% written to ../output/postGMM_fitting_threshold_30_binrange_-0.0175_-0.0125.csv
+2024-02-29 00:04:51,333:INFO:Data for bin (-0.0175, -0.0125) with AUC >= 45% written to ../output/postGMM_fitting_threshold_45_binrange_-0.0175_-0.0125.csv
+2024-02-29 00:15:46,506:INFO:Data for bin (-0.0175, -0.0125) with AUC >= 50% written to ../output/postGMM_fitting_threshold_50_binrange_-0.0175_-0.0125.csv
+2024-02-29 00:26:31,144:INFO:Data for bin (-0.0125, -0.0075) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_-0.0125_-0.0075.csv
+2024-02-29 00:37:14,628:INFO:Data for bin (-0.0125, -0.0075) with AUC >= 25% written to ../output/postGMM_fitting_threshold_25_binrange_-0.0125_-0.0075.csv
+2024-02-29 00:48:04,770:INFO:Data for bin (-0.0125, -0.0075) with AUC >= 30% written to ../output/postGMM_fitting_threshold_30_binrange_-0.0125_-0.0075.csv
+2024-02-29 00:58:54,950:INFO:Data for bin (-0.0125, -0.0075) with AUC >= 45% written to ../output/postGMM_fitting_threshold_45_binrange_-0.0125_-0.0075.csv
+2024-02-29 01:09:38,166:INFO:Data for bin (-0.0125, -0.0075) with AUC >= 50% written to ../output/postGMM_fitting_threshold_50_binrange_-0.0125_-0.0075.csv
+2024-02-29 01:20:29,983:INFO:Data for bin (-0.0075, -0.0025) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_-0.0075_-0.0025.csv
+2024-02-29 01:31:21,778:INFO:Data for bin (-0.0075, -0.0025) with AUC >= 25% written to ../output/postGMM_fitting_threshold_25_binrange_-0.0075_-0.0025.csv
+2024-02-29 01:42:06,591:INFO:Data for bin (-0.0075, -0.0025) with AUC >= 30% written to ../output/postGMM_fitting_threshold_30_binrange_-0.0075_-0.0025.csv
+2024-02-29 01:52:57,741:INFO:Data for bin (-0.0075, -0.0025) with AUC >= 45% written to ../output/postGMM_fitting_threshold_45_binrange_-0.0075_-0.0025.csv
+2024-02-29 02:03:45,735:INFO:Data for bin (-0.0075, -0.0025) with AUC >= 50% written to ../output/postGMM_fitting_threshold_50_binrange_-0.0075_-0.0025.csv
+2024-02-29 02:14:57,893:INFO:Data for bin (-0.0025, 0.0025) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_-0.0025_0.0025.csv
+2024-02-29 02:26:07,591:INFO:Data for bin (-0.0025, 0.0025) with AUC >= 25% written to ../output/postGMM_fitting_threshold_25_binrange_-0.0025_0.0025.csv
+2024-02-29 02:37:14,903:INFO:Data for bin (-0.0025, 0.0025) with AUC >= 30% written to ../output/postGMM_fitting_threshold_30_binrange_-0.0025_0.0025.csv
+2024-02-29 02:48:14,746:INFO:Data for bin (-0.0025, 0.0025) with AUC >= 45% written to ../output/postGMM_fitting_threshold_45_binrange_-0.0025_0.0025.csv
+2024-02-29 02:59:19,351:INFO:Data for bin (-0.0025, 0.0025) with AUC >= 50% written to ../output/postGMM_fitting_threshold_50_binrange_-0.0025_0.0025.csv
+2024-02-29 03:10:12,448:INFO:Data for bin (0.0025, 0.0075) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_0.0025_0.0075.csv
+2024-02-29 03:21:02,670:INFO:Data for bin (0.0025, 0.0075) with AUC >= 25% written to ../output/postGMM_fitting_threshold_25_binrange_0.0025_0.0075.csv
+2024-02-29 03:31:57,559:INFO:Data for bin (0.0025, 0.0075) with AUC >= 30% written to ../output/postGMM_fitting_threshold_30_binrange_0.0025_0.0075.csv
+2024-02-29 03:42:48,749:INFO:Data for bin (0.0025, 0.0075) with AUC >= 45% written to ../output/postGMM_fitting_threshold_45_binrange_0.0025_0.0075.csv
+2024-02-29 03:53:38,147:INFO:Data for bin (0.0025, 0.0075) with AUC >= 50% written to ../output/postGMM_fitting_threshold_50_binrange_0.0025_0.0075.csv
+2024-02-29 04:04:25,820:INFO:Data for bin (0.0075, 0.0125) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_0.0075_0.0125.csv
+2024-02-29 04:15:17,050:INFO:Data for bin (0.0075, 0.0125) with AUC >= 25% written to ../output/postGMM_fitting_threshold_25_binrange_0.0075_0.0125.csv
+2024-02-29 04:26:04,745:INFO:Data for bin (0.0075, 0.0125) with AUC >= 30% written to ../output/postGMM_fitting_threshold_30_binrange_0.0075_0.0125.csv
+2024-02-29 04:36:46,849:INFO:Data for bin (0.0075, 0.0125) with AUC >= 45% written to ../output/postGMM_fitting_threshold_45_binrange_0.0075_0.0125.csv
+2024-02-29 04:47:43,979:INFO:Data for bin (0.0075, 0.0125) with AUC >= 50% written to ../output/postGMM_fitting_threshold_50_binrange_0.0075_0.0125.csv
+2024-02-29 04:58:33,345:INFO:Data for bin (0.0125, 0.0175) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_0.0125_0.0175.csv
+2024-02-29 05:09:29,350:INFO:Data for bin (0.0125, 0.0175) with AUC >= 25% written to ../output/postGMM_fitting_threshold_25_binrange_0.0125_0.0175.csv
+2024-02-29 05:24:46,892:INFO:Data for bin (0.0125, 0.0175) with AUC >= 30% written to ../output/postGMM_fitting_threshold_30_binrange_0.0125_0.0175.csv
+2024-02-29 05:43:10,496:INFO:Data for bin (0.0125, 0.0175) with AUC >= 45% written to ../output/postGMM_fitting_threshold_45_binrange_0.0125_0.0175.csv
+2024-02-29 05:59:13,114:INFO:Data for bin (0.0125, 0.0175) with AUC >= 50% written to ../output/postGMM_fitting_threshold_50_binrange_0.0125_0.0175.csv
+2024-02-29 06:09:48,186:INFO:Data for bin (0.0175, 0.0225) with AUC >= 20% written to ../output/postGMM_fitting_threshold_20_binrange_0.0175_0.0225.csv
+2024-02-29 06:21:14,502:INFO:Data for bin (0.0175, 0.0225) with AUC >= 25% written to ../output/postGMM_fitting_threshold_25_binrange_0.0175_0.0225.csv
+2024-02-29 06:32:23,733:INFO:Data for bin (0.0175, 0.0225) with AUC >= 30% written to ../output/postGMM_fitting_threshold_30_binrange_0.0175_0.0225.csv
+2024-02-29 06:43:31,904:INFO:Data for bin (0.0175, 0.0225) with AUC >= 45% written to ../output/postGMM_fitting_threshold_45_binrange_0.0175_0.0225.csv
+2024-02-29 06:54:49,694:INFO:Data for bin (0.0175, 0.0225) with AUC >= 50% written to ../output/postGMM_fitting_threshold_50_binrange_0.0175_0.0225.csv
+2024-02-29 06:54:49,694:INFO:CSV files have been saved in output folder.

@@ -13,7 +13,8 @@ knitr::opts_knit$set(root.dir = wd)
 
 
 ```{r calibrated_data_readin}
-# specify the extension unique to your calibrated files
+# specify the extension unique to your calibrated files; many datasets some of 
+# which very big, so process in batches (manually added files to several batch fodlers)
 extension = "thresholded_calibrated.tsv"
 batch = "batch2_9"
 # get all calibrated files

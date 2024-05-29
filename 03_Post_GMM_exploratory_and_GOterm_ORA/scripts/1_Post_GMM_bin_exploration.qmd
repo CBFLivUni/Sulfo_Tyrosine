@@ -1,0 +1,451 @@
+---
+title: "Post_GMM_Analysis"
+format: pdf
+editor: visual
+---
+
+```{r libraries}
+library(tidyverse)
+library(stringr) 
+library(ggplot2)
+library(ggrepel)
+library(dplyr)
+```
+
+```{r functions}
+###### Function to get clean filenames, and round and extract bin boundaries ######
+clean_round_extract <- function(name, index) {
+  
+  #separate the name into pars splitting at _
+  parts <- unlist(strsplit(name, "_"))
+ 
+  # Rounding the numbers to the fourth decimal place; lower bin boundary is the 2nd part, upper is the 3rd part
+  lower <- round(as.numeric(parts[2]), 4)
+  upper <- round(as.numeric(parts[3]), 4)
+
+  # Storing the boundaries
+  # index = 1
+  lower_boundaries[length(lower_boundaries) + 1] <<- lower
+  upper_boundaries[length(upper_boundaries) + 1] <<- upper
+
+  # Reconstructing the cleaned name (and returning it)
+  return(paste0("mz_", lower, "_", upper))
+}
+
+# TODO: turn beow into a function to keep my environment tidy?
+# # List of all objects in the environment
+# all_objects <- ls()
+# 
+# # List of objects to keep (replace these with your actual data object names)
+# data_objects <- c("postGMM_data")
+# 
+# # Objects to remove
+# objects_to_remove <- setdiff(all_objects, data_objects)
+# 
+# # Remove the objects
+# rm(list = objects_to_remove)
+# 
+# # Clear objects_to_remove to clean up
+# rm(objects_to_remove)
+# 
+# rm("all_objects", "data_objects")
+
+
+```
+
+## Get proportion of tyrosine-containing peptides
+
+For each m/z bin that we have collected data from, we want to see what proportion of the peptides selected via our filtering contain a phospho-tyrosine (which could potentially be a sulfo-tyorsine)
+
+```{r read_data, echo=FALSE}
+# specify the extension unique to your calibrated files
+extension = "postGMM"
+wd <- "C:/Users/jtzve/Desktop/Sufo_Tyrosine/03_Post_GMM_analysis/data/"
+# get all files of interest
+bin_data_files <- list.files(wd, pattern = extension, full.names = TRUE, recursive = TRUE)
+
+# and get file path (not reltive!)
+input_filenames <- basename(bin_data_files)
+
+# read in all data one by one into an empty list, setting each data frame as a
+# new elemnt of the list. 
+postGMM_data <- list()
+print("reading in data")
+for (i in 1:length(bin_data_files)) {
+  print(bin_data_files[[i]])
+  postGMM_data[[i]] <- read.csv(bin_data_files[[i]])
+  print(i/length(input_filenames)*100)
+}
+```
+
+```{r clean_names}
+# clean the names - remove .csv, round the ranges, leave just the range and put mz before it
+# reatin information about bin ID == clean names, lower boundary, upper boundary to then put in a dataframe
+
+# Cleaning the names
+cleaned_names <- gsub("postGMM_fitting_binrange", "mz", input_filenames)
+cleaned_names <- gsub(".csv", "", cleaned_names, fixed = TRUE)
+
+# Now, cleaned_names should have the format like 'mz_0.300-0.400' 
+
+# Initialise empty vectors to store upper and lower boundaries
+lower_boundaries <- numeric()
+upper_boundaries <- numeric()
+
+
+# Applying the function to each name and storing the results
+cleaned_names <- sapply(cleaned_names, clean_round_extract, seq_along(cleaned_names))
+
+names(postGMM_data) <- cleaned_names
+
+```
+
+```{r get_bin_results}
+# create a data frame with one row for each bin 
+# rm(bin_proportions_df)
+bin_proportions_df <- as.data.frame(matrix(nrow = length(postGMM_data), ncol = 0))
+bin_proportions_df$bin_ID <- cleaned_names
+
+# extract bin limits from the bin ID. round the values because they are a bit weird
+bin_proportions_df$lower_boundary <- lower_boundaries
+bin_proportions_df$upper_boundary <- upper_boundaries
+
+# for each bin, look at the corresponding data in post_GMM_data, and count:
+# 1) the overall number of Tyrosine-containing peptides (one or more Y present in peptidoform ID coplumn)
+
+# 2) the number of phosphotyrosine-containing peptides (Y243 present)
+
+# 3) the total number of peptidoforms
+
+# 4) calculate the proportion of tyrosine containing and proportion of phophotyrosine containing peptides in each bin
+
+## NB: also do the same for Serine and Threonine to compare 
+
+# Initialise a data frame to store the results
+results <- data.frame(bin_proportions_df, 
+                      ########## TYROSINE 
+                      tyrosine_containing_peptides_count = integer(length(postGMM_data)), 
+                      phosphotyrosine_containing_peptides_count = integer(length(postGMM_data)), 
+                      total_peptidoforms = integer(length(postGMM_data)), 
+                      tyrosine_containing_proportion = numeric(length(postGMM_data)), 
+                      phosphotyrosine_containing_proportion = numeric(length(postGMM_data)),
+                      ######### THREONINE
+                      threonine_containing_peptides_count = integer(length(postGMM_data)), 
+                      phosphothreonine_containing_peptides_count = integer(length(postGMM_data)), 
+                      #total_peptidoforms = integer(length(postGMM_data)), 
+                      threonine_containing_proportion = numeric(length(postGMM_data)), 
+                      phosphothreonine_containing_proportion = numeric(length(postGMM_data)),
+                      ######## SERINE
+                      serine_containing_peptides_count = integer(length(postGMM_data)), 
+                      phosphoserine_containing_peptides_count = integer(length(postGMM_data)), 
+                      #total_peptidoforms = integer(length(postGMM_data)), 
+                      serine_containing_proportion = numeric(length(postGMM_data)), 
+                      phosphoserine_containing_proportion = numeric(length(postGMM_data)))
+
+# test_df <- data.frame(peptidoform_id = c("TTT", "Y", "TYTY", "TY_Y243"))
+# data <- test_df
+
+# Iterate through each bin
+for (i in seq_along(postGMM_data)) {
+  data <- postGMM_data[[i]]
+
+  results$tyrosine_containing_peptides_count[i] <- sum(grepl("Y", data$peptidoform_id))
+  results$phosphotyrosine_containing_peptides_count[i] <- sum(grepl("Y243", data$peptidoform_id))
+  results$total_peptidoforms[i] <- nrow(data)
+
+  # Calculating proportions
+  results$tyrosine_containing_proportion[i] <- results$tyrosine_containing_peptides_count[i] / results$total_peptidoforms[i]
+  results$phosphotyrosine_containing_proportion[i] <- results$phosphotyrosine_containing_peptides_count[i] / results$total_peptidoforms[i]
+  
+  # Now for threonine
+  
+  results$threonine_containing_peptides_count[i] <- sum(grepl("T", data$peptidoform_id))
+  results$phosphothreonine_containing_peptides_count[i] <- sum(grepl("T181", data$peptidoform_id)) 
+  ### TODO also interesting how many of the pT contain a Y - might be misidentified   # as pT when it's in fact sY
+  results$pT_containing_with_Y[i] <- sum(grepl("T181.*Y|Y.*T181", data$peptidoform_id)) 
+  print(results$pT_containing_with_Y[i])
+  
+  # Calculating proportions
+  results$threonine_containing_proportion[i] <- results$threonine_containing_peptides_count[i] / results$total_peptidoforms[i]
+  results$phosphothreonine_containing_proportion[i] <- results$phosphothreonine_containing_peptides_count[i] / results$total_peptidoforms[i]
+  
+  
+  ## and for serine
+  
+  results$serine_containing_peptides_count[i] <- sum(grepl("S", data$peptidoform_id))
+  results$phosphoserine_containing_peptides_count[i] <- sum(grepl("S167", data$peptidoform_id)) 
+  
+
+  # Calculating proportions
+  results$serine_containing_proportion[i] <- results$serine_containing_peptides_count[i] / results$total_peptidoforms[i]
+  results$phosphoserine_containing_proportion[i] <- results$phosphoserine_containing_peptides_count[i] / results$total_peptidoforms[i]
+  
+}
+
+# might be interesting to look at what fraction of tyrosine-containing are 'phosphorylated'
+results$pY_containing_fraction_of_Ycontaining <- results$phosphotyrosine_containing_peptides_count / 
+  results$tyrosine_containing_peptides_count
+
+# Ratio of phospho-Threonine to total Threonine-containing peptides
+results$pT_containing_fraction_of_Tcontaining <- results$phosphothreonine_containing_peptides_count / results$threonine_containing_peptides_count
+
+# Ratio of phospho-serine to total serine-containing peptides
+results$pS_containing_fraction_of_Scontaining <- results$phosphoserine_containing_peptides_count / results$serine_containing_peptides_count
+
+
+## pT with Y as fraction of pT 
+results$pT_with_Y_as_fraction_of_pT <- results$pT_containing_with_Y / results$phosphothreonine_containing_peptides_count
+
+
+write.csv(results, file = "../out/PTM_proportions_results_by_bin_newdat.csv", row.names = FALSE)
+
+
+## reorder column names
+new_order <- c("bin_ID",
+               "lower_boundary",
+               "upper_boundary",
+               "total_peptidoforms",
+               "threonine_containing_peptides_count",
+               "serine_containing_peptides_count",
+               "tyrosine_containing_peptides_count",
+               "phosphothreonine_containing_peptides_count",
+               "phosphoserine_containing_peptides_count",
+               "phosphotyrosine_containing_peptides_count",
+               "threonine_containing_proportion",
+               "serine_containing_proportion",
+               "tyrosine_containing_proportion",
+               "phosphothreonine_containing_proportion",
+               "phosphoserine_containing_proportion",
+               "phosphotyrosine_containing_proportion",
+               "pT_containing_fraction_of_Tcontaining",
+               "pS_containing_fraction_of_Scontaining",
+               "pY_containing_fraction_of_Ycontaining",
+               "pT_containing_with_Y"
+               )
+
+results <- results[, new_order]
+names(results)
+
+# round the columns that contain proportions to 4 decimals for the plots - all except first 10
+results[, 10:ncol(results)] <- lapply(results[, 10:ncol(results)], round, 4)
+# check
+head(results)
+
+# also order by m/z 
+results <- results[order(results$lower_boundary), ]
+
+# Then, plot with highlighting
+# Create a new column 'highlight' based on conditions
+results$highlight <- ifelse(results$bin_ID %in% c("mz_-0.0225_-0.0175", "mz_-0.0175_-0.0125", "mz_-0.0125_-0.0075"), "Bins of Interest",
+                            ifelse(results$bin_ID %in% c("mz_0.0075_0.0125", "mz_0.0125_0.0175", "mz_0.0175_0.0225"), "DECOY Bins", "Other Bins"))
+
+
+# Assign color-blind friendly colors
+color_blind_friendly_colors <- c("Bins of Interest" = "#E69F00", # orange
+                                 "DECOY Bins" = "#56B4E9", # sky blue
+                                 "Other Bins" = "grey") # yellow
+
+```
+
+```{r plotting_tests}
+###################### barplots   ################
+# order by bin m/z when plotting!! NB plots saved outside the rmd in a normal .R script
+
+ggplot(results, aes(x = reorder(bin_ID, lower_boundary), y = tyrosine_containing_peptides_count)) +
+  geom_bar(stat = "identity", aes(fill = highlight)) +
+  scale_fill_manual(values = color_blind_friendly_colors) +
+  geom_text(aes(label = tyrosine_containing_peptides_count, color = highlight), vjust = -0.5, size = 3, fontface = "bold") +
+  scale_color_manual(values = color_blind_friendly_colors) + # Match text color to bar color
+  theme_minimal() +
+  labs(x = "Bin ID", y = "Count", title = "Tyrosine-Containing Peptides by Bin") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  guides(fill = guide_legend(title = "Category"), color = FALSE) # Hide the color legend
+
+#basic
+ggplot(results, aes(x = reorder(bin_ID, lower_boundary), y = tyrosine_containing_peptides_count)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = tyrosine_containing_peptides_count), vjust = -0.5, size = 3) + # Add counts above bars
+  theme_minimal() +
+  labs(x = "Bin ID", y = "Count", title = "Tyrosine-Containing Peptides by Bin") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+#with gradient
+
+ggplot(results, aes(x = reorder(bin_ID, lower_boundary), y = tyrosine_containing_peptides_count)) +
+  geom_bar(stat = "identity", aes(fill = tyrosine_containing_peptides_count)) +  # Use count for color gradient
+  scale_fill_gradient(low = "lightblue", high = "darkblue") +  # Gradient from light to dark blue
+  geom_text(aes(label = tyrosine_containing_peptides_count), vjust = -0.5, size = 3) +
+  theme_minimal() +
+  labs(x = "Bin ID", y = "Count", title = "Tyrosine-Containing Peptides by Bin") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r barplots}
+# below was ran in a separate script: plot_saving.R
+# Define columns to plot (all except the first three and the highlight colour column)
+columns_to_plot <- names(results)[4:ncol(results)-1]
+
+# Start PDF device
+pdf("../out/BarPlots_byBin_15pc_individual.pdf", width = 11, height = 8.5)
+
+# Loop through each column to create and save the plot
+for (col in columns_to_plot) {
+  p <- ggplot(results, aes(x = reorder(bin_ID, lower_boundary), y = get(col))) +
+    geom_bar(stat = "identity", aes(fill = highlight)) +
+    scale_fill_manual(values = color_blind_friendly_colors) +
+    geom_text(aes(label = get(col), color = highlight), vjust = -0.5, size = 3, fontface = "bold") +
+    scale_color_manual(values = color_blind_friendly_colors) +
+    theme_minimal() +
+    labs(x = "Bin ID", y = col, title = paste(col, "by Bin")) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    guides(fill = guide_legend(title = "Category"), color = FALSE)
+  
+  print(p) # Print the plot to the PDF device
+}
+
+# Close the PDF device
+dev.off()
+
+
+```
+
+```{r chi_squared_tests_functionbuilding}
+# accept two dataframes and their corresponding columns as input
+plot_chi_squared_residuals <- function(observed_df, expected_df, observed_col, expected_col, pdf_device) {
+  # extract the counts from the dataframes
+  observed_counts <- observed_df[[observed_col]]
+  expected_counts <- expected_df[[expected_col]]
+  
+  # perform the Chi-squared test
+  chi_squared_test <- chisq.test(observed_counts, p = expected_counts / sum(expected_counts), simulate.p.value = TRUE)
+  
+  # calculate standardised residuals
+  standardized_residuals <- chi_squared_test$stdres
+  
+  # create a dataframe for plotting
+  residuals_data <- data.frame(bin_ID = observed_df$bin_ID, Residuals = standardized_residuals)
+  
+  # merge with the original data to include m/z boundaries
+  residuals_data <- residuals_data %>%
+    left_join(observed_df %>% select(bin_ID, lower_boundary), by = "bin_ID") %>%
+    arrange(lower_boundary) # order by lower boundary for plotting
+  
+  # plotting the standardized residuals
+  plot_title <- paste0("Standardized Residuals from Chi-squared Test of ", observed_col)
+  p <- ggplot(residuals_data, aes(x = reorder(bin_ID, lower_boundary), y = Residuals)) +
+    geom_point(size = 3) +
+    geom_hline(yintercept = c(-2, 2), linetype = "dashed", color = "salmon") + # thresholds for significance
+    theme_minimal() +
+    labs(title = plot_title,
+         x = "Bin (Ordered by Lower m/z Boundary)",
+         y = "Standardized Residual") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  print(p)
+}
+
+
+```
+
+```{r chi_Squared_resultsgeneration_oncounts}
+## need a tleas 5 observations per variable for each bin; we know this is not the case for the two bins at the lowest m/z; too few peptidoforms have been recorded for these bins so we will remove them for the chi-squared tests
+
+# sort by mz lower boundary and remove two bins with too few observations
+sorted_results <- results[order(results$lower_boundary), ]
+chi_results <- sorted_results[-c(1:2), ]
+
+# for chis squared tests we would need to get some expected proportions for the null hypothesis that all bins have the same proportions accross 
+# combine all data frames into one and retain only unique peptidoform rows
+combined_df <- bind_rows(postGMM_data) %>% 
+  distinct()
+
+# NB this includes the bins we removed above, but since they contribute a tiny fraction of all peptidoforms, some of which not unique, it should be OK.
+
+total_peptidoforms <- nrow(combined_df)
+Y_containing_total <- sum(grepl("Y", combined_df$peptidoform_id))
+T_containing_total <- sum(grepl("T", combined_df$peptidoform_id))
+S_containing_total <- sum(grepl("S", combined_df$peptidoform_id))
+
+pY_containing_total <- sum(grepl("Y243", combined_df$peptidoform_id))
+pT_containing_total <- sum(grepl("T181", combined_df$peptidoform_id))
+pS_containing_total <- sum(grepl("S167", combined_df$peptidoform_id))
+
+
+# calculate overall proportions
+prop_Y = Y_containing_total / total_peptidoforms
+prop_T = T_containing_total / total_peptidoforms
+prop_S = S_containing_total / total_peptidoforms
+
+prop_pY = pY_containing_total / total_peptidoforms
+prop_pT = pT_containing_total / total_peptidoforms
+prop_pS = pS_containing_total / total_peptidoforms
+
+# calculate expected counts for each bin
+expected_counts_for_chi <- data.frame(
+  bin_ID = chi_results$bin_ID,
+  lower_boundary = chi_results$lower_boundary,
+  total_peptidoforms = chi_results$total_peptidoforms,
+  expected_Y_counts = chi_results$total_peptidoforms * prop_Y,
+  expected_T_counts = chi_results$total_peptidoforms * prop_T,
+  expected_S_counts = chi_results$total_peptidoforms * prop_S,
+  expected_pY_counts = chi_results$total_peptidoforms * prop_pY,
+  expected_pT_counts = chi_results$total_peptidoforms * prop_pT,
+  expected_pS_counts = chi_results$total_peptidoforms * prop_pS
+)
+
+
+# crate my data frame of observed results in the same order
+observed_counts_for_chi <- data.frame(
+  bin_ID = chi_results$bin_ID,
+  lower_boundary = chi_results$lower_boundary,
+  total_peptidoforms = chi_results$total_peptidoforms,
+  observed_Y_counts = chi_results$tyrosine_containing_peptides_count,
+  observed_T_counts = chi_results$threonine_containing_peptides_count,
+  observed_S_counts = chi_results$serine_containing_peptides_count,
+  observed_pY_counts = chi_results$phosphotyrosine_containing_peptides_count,
+  observed_pT_counts = chi_results$phosphothreonine_containing_peptides_count,
+  observed_pS_counts = chi_results$phosphoserine_containing_peptides_count
+)
+################################### we can perform chi squared test for each column # in plotting script
+
+```
+
+```{r chi_squared_onproportions}
+## kind of hacky?? 
+# calculate expected "counts" for each bin by multiplying by 100
+expected_proportions_for_chi <- data.frame(
+  bin_ID = chi_results$bin_ID,
+  lower_boundary = chi_results$lower_boundary,
+  total_peptidoforms = chi_results$total_peptidoforms,
+  expected_Y_proportions = round(prop_Y * 100),
+  expected_T_proportions = round(prop_T * 100),
+  expected_S_proportions = round(prop_S * 100),
+  expected_pY_proportions = round(prop_pY * 100),
+  expected_pT_proportions = round(prop_pT * 100),
+  expected_pS_proportions = round(prop_pS * 100),
+  expected_pY_fraction_of_Y = round(prop_pY/prop_Y * 100),
+  expected_pT_fraction_of_T = round(prop_pT/prop_T * 100),
+  expected_pS_fraction_of_S = round(prop_pS/prop_S * 100)
+)
+
+
+
+# crate my data frame of observed results in the same order
+observed_proportions_for_chi <- data.frame(
+  bin_ID = chi_results$bin_ID,
+  lower_boundary = chi_results$lower_boundary,
+  total_peptidoforms = chi_results$total_peptidoforms,
+  observed_Y_proportions = round(chi_results$tyrosine_containing_proportion * 100),
+  observed_T_proportions = round(chi_results$threonine_containing_proportion * 100),
+  observed_S_proportions = round(chi_results$serine_containing_proportion * 100),
+  observed_pY_proportions = round(chi_results$phosphotyrosine_containing_proportion * 100),
+  observed_pT_proportions = round(chi_results$phosphothreonine_containing_proportion * 100),
+  observed_pS_proportions = round(chi_results$phosphoserine_containing_proportion * 100),
+  observed_pY_fraction_of_Y = round(chi_results$pY_containing_fraction_of_Ycontaining * 100),
+  observed_pT_fraction_of_T = round(chi_results$pT_containing_fraction_of_Tcontaining * 100),
+  observed_pS_fraction_of_S = round(chi_results$pS_containing_fraction_of_Scontaining * 100)
+)
+
+```

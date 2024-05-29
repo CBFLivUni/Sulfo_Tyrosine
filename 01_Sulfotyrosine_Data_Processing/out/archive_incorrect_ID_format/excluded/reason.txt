@@ -1,3 +1,0 @@
-These were data processed during batch 1. Excluded because the same dataset was received later on from Eric, so they were duplicated.
-
-PXD016662-HeLa_5ng_5min_phos-kingfisher was not excluded per se, it just had 0 data points with phiospho peptides? 

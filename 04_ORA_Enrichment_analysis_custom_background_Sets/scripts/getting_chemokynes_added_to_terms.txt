@@ -1,0 +1,16 @@
+Swiss prot - filter family name column - experiment
+interleukins
+(family:IL) #so that receptors etc are excluded
+
+growth factors
+(family:growth) 
+
+interferons
+(family:interferon)
+
+chemokynes
+(family:chemokine)
+
+
+final search: 
+(family:chemokine) OR (family:IL) OR (family:growth) OR (family:interferon) NOT (family:receptor)

@@ -7,10 +7,10 @@ from scipy.integrate import quad
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import seaborn as sns # for kernel density estimate histogram plots
-import logging #save log instead of printing
+import logging # save log instead of printing
 
 # Configure logging
-logging.basicConfig(filename='my_script_log.log', level=logging.INFO,
+logging.basicConfig(filename='GMM_filtering_AUC_multiple_bins.log', level=logging.INFO,
                     format='%(asctime)s:%(levelname)s:%(message)s')
 
 ###### functions #######
@@ -25,15 +25,14 @@ def gaussian_auc(mean, covar, weight, start, end):
 def gaussian_auc_for_bin(mean, covar, weight, bin_range):
     return gaussian_auc(mean, covar, weight, bin_range[0], bin_range[1])
 
-
-
+###### read in data aggregated by peptidoform #######
 # specify the CSV file path to peptidoform data
 csv_file = '../data/clean_new_peptidoform_IDs_aggregated_by_peptidoform_ID.csv'
 
 # read in the data as a pandas .csv since this is what it originated as
 aggregated_data = pd.read_csv(csv_file)
 
-# sanity checks
+# sanity checks and info for manuscript
 logging.info(f"Total number of peptidoforms detected across all data: {len(set(aggregated_data['peptidoform_id']))}")
 logging.info(f"Sanity check: Are number of rows and number unique peptidoform IDs the same?\nnrows: {len(aggregated_data)}")
 
@@ -43,7 +42,7 @@ aggregated_data['calibrated_error'] = aggregated_data['calibrated_error'].apply(
 aggregated_data['protein'] = aggregated_data['protein'].apply(ast.literal_eval)
 
 # Handle 'alt_protein' clean up before converting to list: replace 'nan', 'nan, ', and 'nan,' with ''
-strings_to_replace = ['nan, ', 'nan,', 'nan']  # quick and dirty fix
+strings_to_replace = ['nan, ', 'nan,', 'nan']  # quick fix
 for string in strings_to_replace:
     aggregated_data['alt_protein'] = aggregated_data['alt_protein'].apply(lambda x: x.replace(string, ""))
 aggregated_data['alt_protein'] = aggregated_data['alt_protein'].apply(ast.literal_eval)
@@ -59,20 +58,21 @@ filtered_data = filtered_by_dataset_ID[filtered_by_dataset_ID['calibrated_error'
 logging.info(f"Total number of peptidoforms post subsequent filtering by number of calibrated errors: {len(set(filtered_data['peptidoform_id']))}")
 logging.info(f"min_n_datasets: {n_datasets_threshold} \nmin_n_calerrors: {n_calerrors_threshold}")
 
-# Selection of peptidoforms that fall in our bin of interest
+# Selection of peptidoforms that fall into our bins of interest
 
 # Step1: Fit gaussian mixture models with 1-4 components and select the optimal number of components for each peptidoform
 n_components_range = range(1, 4)
 
 # reason why we look for two componenents - we expect some sulfation, so centering around -0.01 and 0.
-# reason for 3 - we have observed some data at + 0.01 in initial histograms
+# reason for 3 - there may be some doubly sulfated
+# reason for 4 - we have observed some data at + 0.01 in initial histograms
 
 # select which model fits the data best depending on nuber of components, and BIC score
 # we want the lowest BIC score but also we don't want to overfit - we have seen sometimes
 # multiple components are selected based on BIC alone where eyeballing the histogram
 # would have resulted in a lower number of components. Therefore, we prioritise a low score
 # only if it's 'significantly' lower than the score of the smallest number of components with the best socre.
-# rule of thumb - 10 points lower score is significant, but we also test by plotting AUC later
+# rule of thumb - 10 points lower score is 'very strong evidence', but we also test by plotting AUC later
 
 # initiate empty dictionary to store best models
 best_models = {}
@@ -114,20 +114,20 @@ for peptidoform_id in filtered_data['peptidoform_id']:
 # Store AUC percentages and set threshold
 peptidoform_aucs = {}
 # auc_percent_threshold = 15
-auc_percent_thresholds = [20, 25, 30, 45, 50]
+auc_percent_thresholds = [15, 20, 25, 30, 45, 50]
 
 # Color Universal Design (CUD) color palette
-colors = ['#0072B2',  # Blue
-          '#E69F00',  # Orange
-          '#009E73',  # Green
-          '#CC79A7']  # Pink not reLLY needed here as only 3 components max
+colors = ['#0072B2',  # Blue for 1st component
+          '#E69F00',  # Orange for 2nd component
+          '#009E73',  # Green for third
+          '#CC79A7']  # Pink for 4th
 
-# Define the range of our m/z bin of interest
-# NB: here I have used the narrow bins from our previous analysis as they showed highest pY proportions in bin of interest
+# Define the range of our m/z bins of interest
+# NB: here I have used the narrow bins from our previous analysis as they showed highest pY proportions in BOI
 # mz_bin_start = -0.0125
 # mz_bin_end = -0.0075
 
-# List of acceptable ranges; can add or remove in future
+# list of acceptable ranges; can add new ones ot change current one to alter bin width if needed
 acceptable_ranges = [(-0.0125, -0.0075)]
 
 # Initialize the final list of bins
@@ -147,11 +147,11 @@ for acceptable_range in acceptable_ranges:
     # Add the bins for the current acceptable range to the final list of all bins
     all_bins.extend(bins)
 
-# now we need histograms for each bin so we create a pdf for each
+# now we need histograms with AUC for each bin so we create a pdf for each
 pdf_pages_all_bins = {
     bin_range: PdfPages(f'../output/histograms_post_auc_filtering_bin_{bin_range[0]}_{bin_range[1]}.pdf') for
     bin_range in all_bins}
-# also create a pdf to store all histograms of all peptidoforms - not for this script run
+# can also create a pdf to store all histograms of all peptidoforms - not for this run, redundant
 # pdf_pages_all = PdfPages('../output/gmm_models_histograms.pdf')
 
 # Iterate through all the bins and apply AUC filtering
@@ -160,7 +160,6 @@ for bin_range in all_bins:
         filtered_peptidoform_ids = set()  # Using a set to avoid duplicate peptidoform IDs
         auc_percentages_bin = []  # Store AUC percentages for this bin
 
-
     # Iterate through the best models and apply AUC filtering based on the current bin
         for peptidoform_id, model_data in best_models.items():
             model = model_data['model']
@@ -168,6 +167,7 @@ for bin_range in all_bins:
             errors_reformatted = np.array(errors_list, dtype=float).reshape(-1, 1)
 
         # Calculate the AUC over the current bin for each component of the best model
+            # uses helper function
             component_aucs = [gaussian_auc_for_bin(mean[0], covar[0][0], weight, bin_range)
                               for mean, covar, weight in zip(model.means_, model.covariances_, model.weights_)]
 
@@ -185,26 +185,26 @@ for bin_range in all_bins:
                 # Plot the histogram of the data
                 n, bins, patches = plt.hist(errors_reformatted, bins=30, density=True, alpha=0.6, color='g')
 
-                # Plot each Gaussian component, its median line, and text for the median
+                # Plot each Gaussian component, its median line, and print the median
                 for i in range(model.n_components):
                     mean = model.means_[i][0]
                     var = model.covariances_[i][0]
                     weight = model.weights_[i]
                     x = np.linspace(min(errors_reformatted), max(errors_reformatted), 1000)
                     gauss = weight * norm.pdf(x, mean, np.sqrt(var))
-                    current_color = colors[i % len(colors)]  # Use modulo to cycle through colors
+                    current_color = colors[i % len(colors)]  # use modulo to cycle through colors
                     plt.plot(x, gauss, linewidth=2, color=current_color)
 
-                    # Add a dashed line at the median (mean for Gaussian), using the same color
+                    # add a dashed line at the mean for Gaussian component, using the same color
                     plt.axvline(x=mean, color=current_color, linestyle='--')
 
-                    # Add mean text annotation
+                    # add mean text annotation
                     plt.text(mean + plt.xlim()[1] / 15, plt.ylim()[1] * 0.9, f'{mean:.4f}', color=current_color,
                              horizontalalignment='center')
 
                 # add title and AUC to the figure
                 plt.title(f'Best Fit for Peptidoform ID: {peptidoform_id} in Bin {bin_range}')
-            # round AUCs first
+                # round AUCs first
                 auc_percentages_to_plot = [round((auc / sum(model.weights_)) * 100, 2) for auc in component_aucs]
                 plt.text(0.05, 0.95, f'AUCs: {auc_percentages_to_plot}%', transform=plt.gca().transAxes, fontsize=10,
                          verticalalignment='top')
@@ -229,9 +229,7 @@ for bin_range in all_bins:
 
 
         # Filter the 'filtered_data' DataFrame to include only rows with peptidoform IDs in 'sulfo_filtered_peptidoform_ids'
-        df_tosave = filtered_data[filtered_data['peptidoform_id'].isin(filtered_peptidoform_ids)]
-
-        # Check if the resulting subset is empty
+        # check if the resulting subset is empty
         if len(filtered_peptidoform_ids) > 0:
             # Filter the 'filtered_data' DataFrame
             df_tosave = filtered_data[filtered_data['peptidoform_id'].isin(filtered_peptidoform_ids)]
@@ -244,9 +242,9 @@ for bin_range in all_bins:
             # If the subset is empty, print a message indicating no data was saved for this bin
             logging.info(f"No data matched criteria for bin {bin_range} at AUC threshold of {auc_percent_threshold}%. No file written.")
 
-# Close all PDFs
+# close all PDFs
 for pdf in pdf_pages_all_bins.values():
     pdf.close()
 
-# pdf_pages_all.close() # we never opened this one
+# pdf_pages_all.close() # we never opened this one in the current run
 logging.info('PDF files have been saved in output folder.')
